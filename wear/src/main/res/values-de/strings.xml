@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="water">Wasser</string>
+    <string name="done">Geschafft!</string>
+    <string name="missing">fehlen</string>
 </resources>

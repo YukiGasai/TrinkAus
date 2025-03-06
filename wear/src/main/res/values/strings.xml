@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name" translatable="false">TrinkAus</string>
+    <string name="water">Water</string>
+    <string name="done">Done!</string>
+    <string name="missing">missing</string>
+    <string name="tile_label" translatable="false">HydrationTile</string>
+</resources>

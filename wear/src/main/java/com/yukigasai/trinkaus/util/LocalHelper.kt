@@ -1,4 +1,4 @@
-package com.yukigasai.trinkaus
+package com.yukigasai.trinkaus.util
 
 import android.icu.util.LocaleData
 import android.icu.util.ULocale
