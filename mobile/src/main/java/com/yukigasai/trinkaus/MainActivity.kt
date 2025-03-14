@@ -94,6 +94,23 @@ class MainActivity : ComponentActivity() {
         healthConnectClient = HealthConnectClient.getOrCreate(this)
         getPermissionToPostNotifications()
 
+
+        val uri = intent.data
+//        if (uri != null) {
+//            println("Received hydration message$uri")
+//            val hydration = uri.getQueryParameter("hydration")?.toDouble()
+//            if (hydration != null) {
+//                hydrationLevel.doubleValue = hydration
+//            }
+//
+//            val hydrationGoal = uri.getQueryParameter("hydration_goal")?.toDouble()
+//            if (hydrationGoal != null) {
+//                this.hydrationGoal.doubleValue = hydrationGoal
+//            }
+//        }
+        println("Received hydration message: $uri")
+
+
         val messageFilter = IntentFilter(NEW_HYDRATION)
         val messageReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {

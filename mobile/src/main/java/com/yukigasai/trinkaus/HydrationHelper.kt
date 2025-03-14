@@ -43,31 +43,35 @@ object HydrationHelper {
     }
 
     suspend fun readHydrationLevel(context: Context): Double {
-        val now = Instant.now().atZone(ZoneId.systemDefault())
-        val startOfDay = now.truncatedTo(ChronoUnit.DAYS).toInstant()
+        try {
+            val now = Instant.now().atZone(ZoneId.systemDefault())
+            val startOfDay = now.truncatedTo(ChronoUnit.DAYS).toInstant()
 
-        val timeRangeFilter = TimeRangeFilter.between(
-            startTime = startOfDay,
-            endTime = now.toInstant()
-        )
+            val timeRangeFilter = TimeRangeFilter.between(
+                startTime = startOfDay,
+                endTime = now.toInstant()
+            )
 
-        val readRequest = ReadRecordsRequest(
-            recordType = HydrationRecord::class,
-            timeRangeFilter = timeRangeFilter
-        )
+            val readRequest = ReadRecordsRequest(
+                recordType = HydrationRecord::class,
+                timeRangeFilter = timeRangeFilter
+            )
 
-        // Read the records and calculate the total water intake
-        val waterLevel = if (isMetric()) {
-            HealthConnectClient.getOrCreate(context).readRecords(readRequest).records.sumOf {
-                it.volume.inLiters
+            // Read the records and calculate the total water intake
+            val waterLevel = if (isMetric()) {
+                HealthConnectClient.getOrCreate(context).readRecords(readRequest).records.sumOf {
+                    it.volume.inLiters
+                }
+            } else {
+                HealthConnectClient.getOrCreate(context).readRecords(readRequest).records.sumOf {
+                    it.volume.inFluidOuncesUs
+                }
             }
-        } else {
-            HealthConnectClient.getOrCreate(context).readRecords(readRequest).records.sumOf {
-                it.volume.inFluidOuncesUs
-            }
+
+            return waterLevel
+        }catch(e: Exception){
+            return 0.0
         }
-
-        return waterLevel
     }
 
     suspend fun writeHydrationLevel(context: Context, amount: Double) {

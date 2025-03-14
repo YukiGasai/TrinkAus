@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <capability android:name="actions.intent.GET_USER_HEALTH_DATA">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.yukigasai.trinkaus.MainActivity"
+            android:targetPackage="com.yukigasai.trinkaus" />
+<!--        <parameter-->
+<!--        Add this to later a a variable how much water should be added-->
+<!--            android:name="thing.name"-->
+<!--            android:key="q" />-->
+    </capability>
+</shortcuts>

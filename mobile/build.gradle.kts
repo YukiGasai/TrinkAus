@@ -70,7 +70,7 @@ dependencies {
 
 
 
-    wearApp(project(":wear"))
+//    wearApp(project(":wear"))
 
     implementation("androidx.work:work-runtime-ktx:2.7.1")
 }
