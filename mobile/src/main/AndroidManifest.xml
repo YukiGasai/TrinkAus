@@ -55,6 +55,16 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".service.NotificationActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ADD_SMALL" />
+                <action android:name="ADD_MEDIUM" />
+                <action android:name="ADD_LARGE" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".service.CompanionMessageService"
             android:enabled="true"

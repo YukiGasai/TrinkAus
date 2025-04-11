@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,9 +42,12 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.HydrationRecord
+import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.util.HydrationHelper
+import com.yukigasai.trinkaus.util.showNotification
 import kotlinx.coroutines.launch
 
 
@@ -215,14 +219,30 @@ fun MainScreen(
                             }
                         }
 
-                        // Percentage indicator
-                        Text(
-                            text = "${((waterLevel.doubleValue / hydrationGoal.doubleValue) * 100).toInt()}% of goal",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        if (hydrationGoal.doubleValue > 0) {
+                            Text(
+                                text = "${((waterLevel.doubleValue / hydrationGoal.doubleValue) * 100).toInt()}% of goal",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
 
-                        AddHydrationButtons { waterLevel.doubleValue = it }
+                        AddHydrationButtons {
+                            waterLevel.doubleValue = it
+                            SendMessageThread(
+                                context,
+                                Constants.Path.UPDATE_HYDRATION,
+                                it
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                showNotification(context)
+                            }
+                        ) {
+                            Text("Test Notification")
+                        }
                     }
                 }
             }

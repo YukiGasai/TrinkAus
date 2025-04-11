@@ -23,15 +23,8 @@ import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
+import com.yukigasai.trinkaus.util.HydrationOption
 import kotlinx.coroutines.launch
-
-data class HydrationOption(val icon: Int, val amountUS: Double, val amountMetric: Double)
-
-val HYDRATION_OPTIONS = listOf<HydrationOption>(
-    HydrationOption(icon = R.drawable.glass_small_icon, amountUS = 5.0, amountMetric = 0.125),
-    HydrationOption(icon = R.drawable.glass_icon, amountUS = 9.0, amountMetric = 0.25),
-    HydrationOption(icon = R.drawable.bottle_icon, amountUS = 20.0, amountMetric = 0.5)
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +36,7 @@ fun AddHydrationButtons(updateHydrationLevel: (newValue: Double) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        HYDRATION_OPTIONS.forEach { option ->
+        HydrationOption.all.forEach { option ->
             val volume = if (isMetric()) option.amountMetric else option.amountUS
             val description = "${context.getString(R.string.add)} ${getVolumeStringWithUnit(volume)} ${context.getString(R.string.of_water)}"
             val tooltipState = rememberTooltipState()
