@@ -12,8 +12,8 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -66,11 +66,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.7.8")
 
     implementation("com.google.android.gms:play-services-wearable:19.0.0")
-
-
-
-
-//    wearApp(project(":wear"))
-
     implementation("androidx.work:work-runtime-ktx:2.7.1")
+
+    implementation(project(":shared"))
 }

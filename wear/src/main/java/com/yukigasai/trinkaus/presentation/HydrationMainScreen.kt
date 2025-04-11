@@ -26,9 +26,10 @@ import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.util.LocalStore
-import com.yukigasai.trinkaus.util.SendMessageThread
-import com.yukigasai.trinkaus.util.isMetric
+import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.LocalStore
+import com.yukigasai.trinkaus.shared.SendMessageThread
+import com.yukigasai.trinkaus.shared.isMetric
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -52,11 +53,11 @@ fun HydrationMainScreen(hydrationLevel: MutableDoubleState, hydrationGoal: Mutab
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-        goalHydration.doubleValue = LocalStore.load(context, LocalStore.HYDRATION_GOAL_KEY)
+        goalHydration.doubleValue = LocalStore.load(context, Constants.Preferences.HYDRATION_GOAL_KEY)
 
         SendMessageThread(
             context = context,
-            path = SendMessageThread.REQUEST_HYDRATION_PATH,
+            path = Constants.Path.REQUEST_HYDRATION,
         ).start()
     }
 
@@ -64,10 +65,10 @@ fun HydrationMainScreen(hydrationLevel: MutableDoubleState, hydrationGoal: Mutab
         saveJob.value?.cancel()
         saveJob.value = launch {
             delay(1000)
-            LocalStore.save(context, LocalStore.HYDRATION_GOAL_KEY, goalHydration.doubleValue)
+            LocalStore.save(context, Constants.Preferences.HYDRATION_GOAL_KEY, goalHydration.doubleValue)
             SendMessageThread(
                 context = context,
-                path = SendMessageThread.UPDATE_GOAL_PATH,
+                path = Constants.Path.UPDATE_HYDRATION,
                 msg = goalHydration.doubleValue
             ).start()
         }

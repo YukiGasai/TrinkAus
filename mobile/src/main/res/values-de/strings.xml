@@ -3,4 +3,6 @@
     <string name="app_name">TrinkAus</string>
     <string name="add">Füge</string>
     <string name="of_water">Wasser hinzu</string>
+    <string name="hydration_short_label">Wasserstand</string>
+    <string name="hydration_long_label">Prüfe Wasserstand</string>
 </resources>

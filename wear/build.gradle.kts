@@ -61,4 +61,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     debugImplementation(libs.androidx.tiles.tooling)
     wearApp(project(":wear"))
+    implementation(project(":shared"))
 }

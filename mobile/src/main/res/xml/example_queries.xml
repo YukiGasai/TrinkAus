@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="ExampleQueries">
+        <item>Get hydration level</item>
+        <item>Check hydration level</item>
+        <item>Hydration level</item>
+        <item>Hydration</item>
+        <item>Water level</item>
+        <item>Water</item>
+        <item>Hydration status</item>
+        <item>Water status</item>
+    </string-array>
+
+</resources>

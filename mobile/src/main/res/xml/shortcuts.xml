@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
-    <capability android:name="actions.intent.GET_USER_HEALTH_DATA">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetClass="com.yukigasai.trinkaus.MainActivity"
-            android:targetPackage="com.yukigasai.trinkaus" />
-<!--        <parameter-->
-<!--        Add this to later a a variable how much water should be added-->
-<!--            android:name="thing.name"-->
-<!--            android:key="q" />-->
-    </capability>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+<capability
+    android:name="actions.intent.GET_HYDRATION_LEVEL"
+    app:queryPatterns="@xml/example_queries">
+    <intent
+        android:action="android.intent.action.VIEW"
+        android:targetClass="com.yukigasai.trinkaus.presentation.MainActivity"
+        android:targetPackage="com.yukigasai.trinkaus" />
+</capability>
+
+<shortcut
+    android:shortcutId="hydration_level"
+    android:shortcutShortLabel="@string/hydration_short_label"
+    android:shortcutLongLabel="@string/hydration_long_label">
+    <capability-binding android:key="actions.intent.GET_HYDRATION_LEVEL" />
+</shortcut>
 </shortcuts>

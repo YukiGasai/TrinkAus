@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <actions>
-    <action intentName="actions.intent.GET_USER_HEALTH_DATA">
-        <fulfillment urlTemplate="trinkaus://getHydration">
-        </fulfillment>
-    </action>
+<action intentName="actions.intent.GET_HYDRATION_LEVEL">
+    <fulfillment urlTemplate="trinkaus://gethydration{?hydrationLevel}">
+        <parameter-mapping
+            intentParameter="hydrationLevel"
+            urlParameter="hydrationLevel" />
+    </fulfillment>
+</action>
 </actions>

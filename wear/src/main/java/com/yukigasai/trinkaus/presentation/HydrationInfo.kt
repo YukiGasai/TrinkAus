@@ -8,8 +8,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import com.yukigasai.trinkaus.util.getVolumeString
-import com.yukigasai.trinkaus.util.getVolumeStringWithUnit
+import com.yukigasai.trinkaus.shared.getVolumeString
+import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 
 @Composable
 fun HydrationInfo(hydrationLevel: Double, goalHydration: Double) {
