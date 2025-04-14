@@ -2,10 +2,8 @@ package com.yukigasai.trinkaus.presentation
 
 import android.Manifest
 import android.app.ComponentCaller
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -15,25 +13,30 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.health.connect.client.HealthConnectClient
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.yukigasai.trinkaus.shared.Constants
-import com.yukigasai.trinkaus.shared.LocalStore
 import com.yukigasai.trinkaus.util.HydrationHelper
+import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.DataStore.FILE_NAME)
+
 class MainActivity : ComponentActivity() {
+
+    private lateinit var stateHolder: TrinkAusStateHolder
     private lateinit var healthConnectClient: HealthConnectClient
 
-    private val hydrationLevel = mutableDoubleStateOf(0.0)
-    private val hydrationGoal = mutableDoubleStateOf(0.0)
-
+    /**
+     * Request permission to post notifications on Android 13 and above.
+     */
     private fun getPermissionToPostNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -41,14 +44,15 @@ class MainActivity : ComponentActivity() {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    1
+                    this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1
                 )
             }
         }
     }
 
+    /**
+     * Handle Intents from Google Assistant.
+     */
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
         super.onNewIntent(intent, caller)
         if (intent.action != null && intent.action.equals("android.intent.action.VIEW")) {
@@ -56,7 +60,7 @@ class MainActivity : ComponentActivity() {
                 if (intent.hasCategory("android.intent.category.BROWSABLE")) {
                     val hydrationLevel = HydrationHelper.readHydrationLevel(this@MainActivity)
                     val response = Intent()
-                    response.putExtra(Constants.IntentKey.HYDRATION_DATA, hydrationLevel)
+                    response.putExtra("data", hydrationLevel)
                     println("Hydration level: $hydrationLevel after intent received ${intent.action}")
 
                     // Set the result to be read by Google Assistant
@@ -88,42 +92,37 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Refresh the Health Connect data if the app reopens.
+     */
+    override fun onResume() {
+        super.onResume()
+        CoroutineScope(Dispatchers.IO).launch {
+            stateHolder.refreshDataFromSource()
+        }
+    }
+
+    /**
+     * Set up the activity and the UI.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Get the Health Connect client
         healthConnectClient = HealthConnectClient.Companion.getOrCreate(this)
+
+        // Make sure the app has the notification permission
         getPermissionToPostNotifications()
 
-        val messageFilter = IntentFilter(Constants.IntentAction.NEW_HYDRATION)
-        val messageReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val hydration = intent.getDoubleExtra(Constants.IntentKey.HYDRATION_DATA, 0.0)
-                    if (hydration != 0.0) {
-                        hydrationLevel.doubleValue = hydration
-                    }
-
-                    val newHydrationGoal =
-                        intent.getDoubleExtra(Constants.IntentKey.HYDRATION_GOAL, 0.0)
-                    if (newHydrationGoal != 0.0) {
-                        hydrationGoal.doubleValue = newHydrationGoal
-                    }
-                }
-            }
-        }
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter)
-
-        hydrationGoal.doubleValue =
-            LocalStore.load(this, Constants.Preferences.HYDRATION_GOAL_KEY).toDouble()
+        // Init a state holder to manage the hydration data
+        stateHolder = TrinkAusStateHolder(this, this.dataStore)
 
         setContent {
             AppTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.surface
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface
                 ) {
-                    MainScreen(hydrationLevel, hydrationGoal, healthConnectClient)
+                    MainScreen(stateHolder, healthConnectClient)
                 }
             }
         }

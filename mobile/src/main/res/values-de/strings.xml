@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TrinkAus</string>
+    <string name="hydration_widget">Wasser Widget</string>
     <string name="add">Füge</string>
     <string name="of_water">Wasser hinzu</string>
     <string name="hydration_short_label">Wasserstand</string>
     <string name="hydration_long_label">Prüfe Wasserstand</string>
+    <string name="done">Geschafft</string>
+    <string name="left">übrig</string>
+    <string name="settings">Einstellungen</string>
+    <string name="daily_water_intake_goal">Tägliches Ziel</string>
+    <string name="enable_reminders">Erinnerungen</string>
+    <string name="reminder_time_range">Erinnerungszeiten</string>
+    <string name="save">Speichern</string>
+    <string name="reminder_despite_goal">Auch nach Ziel</string>
+    <string name="hydration_notification_text">Du heute hast schon %1$s  Wasser getrunken. Das sind %2$d%% deines Ziels. Bleib dran.</string>
 </resources>

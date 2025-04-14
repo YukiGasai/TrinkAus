@@ -19,9 +19,13 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.lifecycleScope
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.SendMessageThread
+import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,9 +35,10 @@ fun vibrateDevice(context: Context) {
     vibrator?.vibrate(VibrationEffect.createOneShot(100, 100))
 }
 
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.DataStore.FILE_NAME)
+
+
 class MainActivity : ComponentActivity() {
-    val hydrationLevel = mutableDoubleStateOf(0.0)
-    val hydrationGoal = mutableDoubleStateOf(0.0)
 
     override fun onResume() {
         super.onResume()
@@ -50,31 +55,15 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-
-        val messageFilter = IntentFilter(Constants.IntentAction.NEW_HYDRATION)
-        val messageReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent == null) return
-                val hydration = intent.getDoubleExtra(Constants.IntentKey.HYDRATION_DATA, 0.0)
-                if (hydration != 0.0) {
-                    hydrationLevel.doubleValue = hydration
-                }
-
-                val goal = intent.getDoubleExtra(Constants.IntentKey.HYDRATION_GOAL, 0.0)
-                if (goal != 0.0) {
-                    hydrationGoal.doubleValue = goal
-                }
-            }
-        }
-
-        registerReceiver(messageReceiver, messageFilter, RECEIVER_EXPORTED)
-        SendMessageThread(
-            context = this, path = Constants.Path.REQUEST_HYDRATION
-        ).start()
-
         super.onCreate(savedInstanceState)
+
+        val stateHolder = TrinkAusStateHolder(
+            context = this,
+            dataStore = dataStore,
+        )
+
         setContent {
-            HydrationMainScreen(hydrationLevel, hydrationGoal)
+            HydrationMainScreen(stateHolder)
         }
     }
 }

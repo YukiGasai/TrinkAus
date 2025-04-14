@@ -6,7 +6,6 @@ import android.content.Intent
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.yukigasai.trinkaus.util.NotificationWorker
 import com.yukigasai.trinkaus.shared.Constants
 import java.util.concurrent.TimeUnit
 

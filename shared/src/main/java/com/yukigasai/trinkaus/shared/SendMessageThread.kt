@@ -9,6 +9,7 @@ class SendMessageThread(
     private val context: Context, private val path: String, private val msg: Any = ""
 ) : Thread() {
     override fun run() {
+        println("Sending message: $path : $msg")
         try {
             val messageClient = Wearable.getMessageClient(context)
             val wearableList = Wearable.getNodeClient(context).connectedNodes

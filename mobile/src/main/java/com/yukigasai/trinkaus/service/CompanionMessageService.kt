@@ -1,14 +1,16 @@
 package com.yukigasai.trinkaus.service
 
-import android.content.Intent
+import androidx.datastore.preferences.core.edit
+import androidx.glance.appwidget.updateAll
 import androidx.health.connect.client.HealthConnectClient
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
+import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.shared.Constants
-import com.yukigasai.trinkaus.util.HydrationHelper
-import com.yukigasai.trinkaus.shared.LocalStore
+import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.SendMessageThread
+import com.yukigasai.trinkaus.util.HydrationHelper
+import com.yukigasai.trinkaus.widget.TrinkAusWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +25,7 @@ class CompanionMessageService : WearableListenerService() {
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        println("Received message: ${messageEvent.path}")
+        println("Received message: ${messageEvent.path} : ${String(messageEvent.data)}")
         when (messageEvent.path) {
 
             Constants.Path.REQUEST_HYDRATION -> {
@@ -39,14 +41,13 @@ class CompanionMessageService : WearableListenerService() {
             }
 
             Constants.Path.UPDATE_GOAL -> {
-                val goal = messageEvent.data.toString(Charsets.UTF_8).toDouble()
-                LocalStore.save(this, Constants.Preferences.HYDRATION_GOAL_KEY, goal)
-
-                val intent = Intent(Constants.IntentAction.NEW_HYDRATION).apply {
-                    putExtra(Constants.IntentKey.HYDRATION_GOAL, goal)
+                CoroutineScope(Dispatchers.IO).launch {
+                    val goal = messageEvent.data.toString(Charsets.UTF_8).toDouble()
+                    this@CompanionMessageService.dataStore.edit { preferences ->
+                        preferences[DataStoreKeys.HYDRATION_GOAL] = goal
+                    }
+                    TrinkAusWidget().updateAll(this@CompanionMessageService)
                 }
-                LocalBroadcastManager.getInstance(this@CompanionMessageService)
-                    .sendBroadcast(intent)
             }
 
 
@@ -60,12 +61,6 @@ class CompanionMessageService : WearableListenerService() {
 
                     val newHydration =
                         HydrationHelper.readHydrationLevel(this@CompanionMessageService)
-                    val intent = Intent(Constants.IntentAction.NEW_HYDRATION).apply {
-                        putExtra(Constants.IntentKey.HYDRATION_DATA, newHydration)
-                    }
-
-                    LocalBroadcastManager.getInstance(this@CompanionMessageService)
-                        .sendBroadcast(intent)
 
                     SendMessageThread(
                         this@CompanionMessageService,
@@ -73,6 +68,7 @@ class CompanionMessageService : WearableListenerService() {
                         newHydration.toString()
                     ).start()
 
+                    TrinkAusWidget().updateAll(this@CompanionMessageService)
                 }
             }
 

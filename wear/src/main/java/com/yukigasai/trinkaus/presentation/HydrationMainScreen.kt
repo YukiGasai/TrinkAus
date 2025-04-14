@@ -1,6 +1,5 @@
 package com.yukigasai.trinkaus.presentation
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
@@ -10,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableDoubleState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,12 +23,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.shared.Constants
-import com.yukigasai.trinkaus.shared.LocalStore
-import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.isMetric
+import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,14 +34,14 @@ import kotlin.math.floor
 const val PROGRESS_BAR_GAP_SIZE = 28f
 
 @Composable
-fun HydrationMainScreen(hydrationLevel: MutableDoubleState, hydrationGoal: MutableDoubleState) {
+fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
     val context = LocalContext.current
+
+    val hydrationLevel = stateHolder.hydrationLevel.collectAsState(0.0)
+    val hydrationGoal = stateHolder.hydrationGoal.collectAsState(2.0)
+
     val focusRequester = remember { FocusRequester() }
-
-    val hydrationLevel = remember { hydrationLevel }
-    val goalHydration = remember { hydrationGoal }
     val tmpGoal = remember { mutableDoubleStateOf(0.0) }
-
     val saveJob = remember { mutableStateOf<Job?>(null) }
 
     val startAngle = 90 + PROGRESS_BAR_GAP_SIZE
@@ -53,44 +49,36 @@ fun HydrationMainScreen(hydrationLevel: MutableDoubleState, hydrationGoal: Mutab
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-        goalHydration.doubleValue = LocalStore.load(context, Constants.Preferences.HYDRATION_GOAL_KEY)
-
-        SendMessageThread(
-            context = context,
-            path = Constants.Path.REQUEST_HYDRATION,
-        ).start()
+        stateHolder.refreshDataFromSource()
     }
 
-    LaunchedEffect(goalHydration.doubleValue) {
+    LaunchedEffect(hydrationGoal.value) {
         saveJob.value?.cancel()
         saveJob.value = launch {
             delay(1000)
-            LocalStore.save(context, Constants.Preferences.HYDRATION_GOAL_KEY, goalHydration.doubleValue)
-            SendMessageThread(
-                context = context,
-                path = Constants.Path.UPDATE_HYDRATION,
-                msg = goalHydration.doubleValue
-            ).start()
+            stateHolder.updateGoal(hydrationGoal.value)
         }
     }
 
     val handleRotaryEvent = { event: RotaryScrollEvent ->
         if (tmpGoal.doubleValue == 0.0) {
-            tmpGoal.doubleValue = goalHydration.doubleValue
+            tmpGoal.doubleValue = hydrationGoal.value
         }
 
         if (isMetric()) {
             tmpGoal.doubleValue = tmpGoal.doubleValue + (event.verticalScrollPixels / 100)
-            val oldGoal = goalHydration.doubleValue
-            goalHydration.doubleValue = (floor(tmpGoal.doubleValue * 10) / 10).coerceIn(1.0, 10.0)
-            if (oldGoal.toInt() != goalHydration.doubleValue.toInt()) {
+            val oldGoal = hydrationGoal.value
+            val newValue  = (floor(tmpGoal.doubleValue * 10) / 10).coerceIn(1.0, 10.0)
+            stateHolder.updateGoal(newValue)
+            if (oldGoal.toInt() != hydrationGoal.value.toInt()) {
                 vibrateDevice(context)
             }
         } else {
             tmpGoal.doubleValue = tmpGoal.doubleValue + (event.verticalScrollPixels / 10)
-            val oldGoal = goalHydration.doubleValue
-            goalHydration.doubleValue = floor(tmpGoal.doubleValue).coerceIn(1.0, 200.0)
-            if ((oldGoal / 10).toInt() != (goalHydration.doubleValue / 10).toInt()) {
+            val oldGoal = hydrationGoal.value
+            val newValue = floor(tmpGoal.doubleValue).coerceIn(1.0, 200.0)
+            stateHolder.updateGoal(newValue)
+            if ((oldGoal / 10).toInt() != (hydrationGoal.value / 10).toInt()) {
                 vibrateDevice(context)
             }
         }
@@ -116,7 +104,7 @@ fun HydrationMainScreen(hydrationLevel: MutableDoubleState, hydrationGoal: Mutab
         ) {
 
             CircularProgressIndicator(
-                progress = (hydrationLevel.doubleValue / goalHydration.doubleValue).toFloat(),
+                progress = (hydrationLevel.value / hydrationGoal.value).toFloat(),
                 strokeWidth = 8.dp,
                 trackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.2f),
                 startAngle = startAngle,
@@ -124,7 +112,7 @@ fun HydrationMainScreen(hydrationLevel: MutableDoubleState, hydrationGoal: Mutab
                 modifier = Modifier.fillMaxSize()
             )
             Column {
-                HydrationInfo(hydrationLevel.doubleValue, goalHydration.doubleValue)
+                HydrationInfo(hydrationLevel.value, hydrationGoal.value)
                 Spacer(modifier = Modifier.size(16.dp))
                 AddHydrationButton(HYDRATION_OPTIONS)
             }
@@ -132,10 +120,10 @@ fun HydrationMainScreen(hydrationLevel: MutableDoubleState, hydrationGoal: Mutab
     }
 }
 
-
-@SuppressLint("UnrememberedMutableState")
-@WearPreviewDevices
-@Composable
-fun PreviewWearApp() {
-    HydrationMainScreen(mutableDoubleStateOf(1.0), mutableDoubleStateOf(3.0))
-}
+//
+//@SuppressLint("UnrememberedMutableState")
+//@WearPreviewDevices
+//@Composable
+//fun PreviewWearApp() {
+//    HydrationMainScreen()
+//}

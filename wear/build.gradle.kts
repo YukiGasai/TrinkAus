@@ -60,6 +60,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     debugImplementation(libs.androidx.tiles.tooling)
+    implementation("androidx.datastore:datastore-preferences:1.1.4")
     wearApp(project(":wear"))
     implementation(project(":shared"))
 }

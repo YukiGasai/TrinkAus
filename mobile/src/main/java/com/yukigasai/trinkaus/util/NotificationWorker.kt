@@ -7,89 +7,147 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Typeface
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.StyleSpan
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.yukigasai.trinkaus.R
+import com.yukigasai.trinkaus.presentation.MainActivity
+import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.service.NotificationActionReceiver
 import com.yukigasai.trinkaus.shared.Constants
-import com.yukigasai.trinkaus.shared.LocalStore
+import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.getVolumeString
+import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.util.Calendar
+import kotlin.or
 
 class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val context = applicationContext
-        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        if (currentHour < 8 || currentHour >= 23) {
+        val isReminderEnabled =
+            context.dataStore.data.first()[DataStoreKeys.IS_REMINDER_ENABLED] ?: true
+
+        if (!isReminderEnabled) {
             return@withContext Result.success()
         }
 
-        val hydrationGoal = LocalStore.load(context, Constants.Preferences.HYDRATION_GOAL_KEY)
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val startTime = context.dataStore.data.first()[DataStoreKeys.REMINDER_START_TIME] ?: 8f
+        val endTime = context.dataStore.data.first()[DataStoreKeys.REMINDER_END_TIME] ?: 23f
+
+        if (currentHour < startTime || currentHour >= endTime) {
+            return@withContext Result.success()
+        }
+
+        val hydrationGoal = context.dataStore.data.first()[DataStoreKeys.HYDRATION_GOAL] ?: 2.0
+        val reminderDespiteGoal =
+            context.dataStore.data.first()[DataStoreKeys.REMINDER_DESPITE_GOAL] == true
         val currentIntake = HydrationHelper.readHydrationLevel(context)
 
-        if (currentIntake >= hydrationGoal) {
+        if (currentIntake >= hydrationGoal && !reminderDespiteGoal) {
             return@withContext Result.success()
         }
-        showNotification(context)
+
+        val percentage = ((currentIntake / hydrationGoal) * 100).toInt()
+
+        showNotification(context, currentIntake, percentage)
         return@withContext Result.success()
     }
 
-    private fun showNotification(context: Context) {
+    private fun showNotification(
+        context: Context,
+        hydrationLevel: Double = 0.0,
+        percentage: Int = 0,
+    ) {
+
         val channel = NotificationChannel(
             Constants.Notification.CHANNEL_ID,
             Constants.Notification.CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_DEFAULT).apply {
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
             description = Constants.Notification.CHANNEL_DESCRIPTION
         }
         val notificationManager: NotificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
 
-        val builder = NotificationCompat.Builder(context,  Constants.Notification.CHANNEL_ID)
+        val startAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val startAppPendingIntent: PendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            startAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val contentText = SpannableString(
+            "You drank ${getVolumeStringWithUnit(hydrationLevel)} of water so far. That's ${percentage}% of your goal. Keep going"
+        ).apply {
+            // Highlight the hydration level
+            val hydrationStart = indexOf(getVolumeStringWithUnit(hydrationLevel))
+            val hydrationEnd = hydrationStart + getVolumeStringWithUnit(hydrationLevel).length
+            setSpan(StyleSpan(Typeface.BOLD), hydrationStart, hydrationEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            // Highlight the percentage
+            val percentageStart = indexOf("$percentage%")
+            val percentageEnd = percentageStart + "$percentage%".length
+            setSpan(StyleSpan(Typeface.BOLD), percentageStart, percentageEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+        val builder = NotificationCompat.Builder(context, Constants.Notification.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(Constants.Notification.MESSAGE_TITLE)
-            .setContentText(Constants.Notification.MESSAGE_CONTENT)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-            listOf(
-                Constants.IntentAction.ADD_SMALL,
-                Constants.IntentAction.ADD_MEDIUM,
-                Constants.IntentAction.ADD_LARGE
-            ).forEachIndexed { index, action ->
-                val option = HydrationOption.all[index]
-
-                val addIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-                    this.action = action
-                }
-                val addPendingIntent: PendingIntent =
-                    PendingIntent.getBroadcast(
-                        context,
-                        index,
-                        addIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-
-                val value = if (isMetric()) option.amountMetric else option.amountUS
-
-                builder.addAction(
-                    option.icon,
-                    "+${getVolumeString(value)}",
-                    addPendingIntent
+            .setContentText(
+                context.getString(
+                    R.string.hydration_notification_text,
+                    getVolumeStringWithUnit(hydrationLevel),
+                    percentage
                 )
+            )
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(startAppPendingIntent)
+            .setAutoCancel(true)
+
+        listOf(
+            Constants.IntentAction.ADD_SMALL,
+            Constants.IntentAction.ADD_MEDIUM,
+            Constants.IntentAction.ADD_LARGE
+        ).forEachIndexed { index, action ->
+            val option = HydrationOption.all[index]
+
+            val addIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+                this.action = action
             }
+            val addPendingIntent: PendingIntent = PendingIntent.getBroadcast(
+                context,
+                index,
+                addIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val value = if (isMetric()) option.amountMetric else option.amountUS
+
+            builder.addAction(
+                option.icon, "+${getVolumeString(value)}", addPendingIntent
+            )
+        }
 
         with(NotificationManagerCompat.from(context)) {
             if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
+                    context, Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 return

@@ -14,31 +14,29 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
 import com.yukigasai.trinkaus.util.HydrationOption
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddHydrationButtons(updateHydrationLevel: (newValue: Double) -> Unit) {
-
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     Row(
         modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         HydrationOption.all.forEach { option ->
             val volume = if (isMetric()) option.amountMetric else option.amountUS
-            val description = "${context.getString(R.string.add)} ${getVolumeStringWithUnit(volume)} ${context.getString(R.string.of_water)}"
+            val description =
+                "${context.getString(R.string.add)} ${getVolumeStringWithUnit(volume)} ${
+                    context.getString(R.string.of_water)
+                }"
             val tooltipState = rememberTooltipState()
             TooltipBox(
                 positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -57,12 +55,7 @@ fun AddHydrationButtons(updateHydrationLevel: (newValue: Double) -> Unit) {
                 state = tooltipState
             ) {
                 Button(onClick = {
-                    scope.launch {
-                        HydrationHelper.writeHydrationLevel(
-                            context = context, amount = volume
-                        )
-                        updateHydrationLevel(HydrationHelper.readHydrationLevel(context))
-                    }
+                    updateHydrationLevel(volume)
                 }) {
                     Icon(
                         painter = painterResource(id = option.icon),

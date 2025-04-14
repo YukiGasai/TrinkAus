@@ -1,7 +1,17 @@
 <resources>
     <string name="app_name">TrinkAus</string>
+    <string name="hydration_widget">Hydration Widget</string>
     <string name="add">Add</string>
     <string name="of_water">of water</string>
     <string name="hydration_short_label">Hydration</string>
     <string name="hydration_long_label">Check hydration level</string>
+    <string name="done">Done</string>
+    <string name="left">left</string>
+    <string name="settings">Settings</string>
+    <string name="daily_water_intake_goal">Daily water intake goal</string>
+    <string name="enable_reminders">Enable Reminders</string>
+    <string name="reminder_time_range">Reminder Time Range</string>
+    <string name="save">Save</string>
+    <string name="reminder_despite_goal">Ignore Goal</string>
+    <string name="hydration_notification_text">You drank %1$s of water so far. That\'s %2$d%% of your goal. Keep going</string>
 </resources>

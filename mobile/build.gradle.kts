@@ -56,6 +56,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.glance.appwidget)
 
     implementation("androidx.health.connect:connect-client:1.1.0-alpha12")
     implementation("androidx.compose.ui:ui:1.7.8")

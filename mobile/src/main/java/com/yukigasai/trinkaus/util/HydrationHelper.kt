@@ -1,6 +1,7 @@
 package com.yukigasai.trinkaus.util
 
 import android.content.Context
+import androidx.datastore.preferences.core.edit
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.HydrationRecord
 import androidx.health.connect.client.records.metadata.Metadata
@@ -8,6 +9,8 @@ import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Volume
+import com.yukigasai.trinkaus.presentation.dataStore
+import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.isMetric
 import java.time.Instant
 import java.time.LocalDateTime
@@ -65,6 +68,10 @@ object HydrationHelper {
                 HealthConnectClient.Companion.getOrCreate(context).readRecords(readRequest).records.sumOf {
                     it.volume.inFluidOuncesUs
                 }
+            }
+
+            context.dataStore.edit { preferences ->
+                preferences[DataStoreKeys.HYDRATION_LEVEL] = waterLevel
             }
 
             return waterLevel

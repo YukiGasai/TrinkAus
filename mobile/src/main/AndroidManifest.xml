@@ -2,11 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+<!--    Allow water reminder notification -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+<!--    Get the permission to access the data from the Health Connect API-->
     <uses-permission android:name="android.permission.health.READ_HYDRATION" />
     <uses-permission android:name="android.permission.health.WRITE_HYDRATION" />
+<!--    For Widget and Notification its important to accesss the data from the Background -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
+<!--    Permission to reschedule the notification Worker on Startup -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+<!--    Required to get the Health Connect Data-->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
     </queries>
@@ -45,6 +52,18 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <receiver
+            android:name=".widget.TrinkAusWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="NEW_HYDRATION" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/trink_aus_widget_info" />
+        </receiver>
 
         <receiver
             android:name=".util.NotificationStarter"

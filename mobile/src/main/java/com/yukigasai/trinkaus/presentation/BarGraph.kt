@@ -218,7 +218,9 @@ fun BarGraph(
                             )
                             // scale x-axis
                             Text(
-                                modifier = Modifier.padding(top = 8.dp).rotate(90f),
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .rotate(90f),
                                 text = xAxisScaleData[index].toString(),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,

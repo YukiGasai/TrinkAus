@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.datastore.preferences.core.edit
+import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.isMetric
 import com.yukigasai.trinkaus.util.HydrationHelper
@@ -42,18 +44,16 @@ class NotificationActionReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.Main).launch {
             HydrationHelper.writeHydrationLevel(context, amount)
             val newHydration = HydrationHelper.readHydrationLevel(context)
-            val intent = Intent(Constants.IntentAction.NEW_HYDRATION).apply {
-                putExtra(Constants.IntentKey.HYDRATION_DATA, newHydration)
-            }
-
-            LocalBroadcastManager.getInstance(context)
-                .sendBroadcast(intent)
 
             SendMessageThread(
                 context,
                 Constants.Path.UPDATE_HYDRATION,
                 newHydration
             ).start()
+
+            context.dataStore.edit { preferences ->
+                preferences[DataStoreKeys.HYDRATION_LEVEL] = newHydration
+            }
 
             // Hide the message
             with(NotificationManagerCompat.from(context)) {

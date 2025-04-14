@@ -10,11 +10,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-
 @Composable
 fun AppTheme(
-    useDarkTheme: Boolean =  isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    useDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val colors = when {
@@ -22,12 +20,12 @@ fun AppTheme(
             if (useDarkTheme) dynamicDarkColorScheme(context)
             else dynamicLightColorScheme(context)
         }
+
         useDarkTheme -> darkColorScheme()
         else -> lightColorScheme()
     }
 
     MaterialTheme(
-        colorScheme = colors,
-        content = content
+        colorScheme = colors, content = content
     )
 }

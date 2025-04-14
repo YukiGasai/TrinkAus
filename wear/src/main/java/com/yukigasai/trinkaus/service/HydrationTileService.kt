@@ -1,6 +1,7 @@
 package com.yukigasai.trinkaus.service
 
 import android.content.Context
+import androidx.datastore.preferences.core.edit
 import androidx.wear.protolayout.ActionBuilders
 import androidx.wear.protolayout.ColorBuilders.argb
 import androidx.wear.protolayout.DimensionBuilders
@@ -17,21 +18,19 @@ import androidx.wear.protolayout.material.Typography
 import androidx.wear.tiles.EventBuilders
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
-import androidx.wear.tiles.tooling.preview.Preview
-import androidx.wear.tiles.tooling.preview.TilePreviewData
-import androidx.wear.tooling.preview.devices.WearDevices
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.tiles.SuspendingTileService
 import com.google.android.horologist.tiles.images.drawableResToImageResource
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.MainActivity
 import com.yukigasai.trinkaus.presentation.PROGRESS_BAR_GAP_SIZE
+import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.shared.Constants
-import com.yukigasai.trinkaus.shared.LocalStore
 import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
+import kotlinx.coroutines.flow.first
 
 private const val RESOURCES_VERSION = "0"
 private const val GLASS_ICON = "glass_icon"
@@ -69,31 +68,29 @@ private fun resources(): ResourceBuilders.Resources {
         ).build()
 }
 
-private fun tile(
+private suspend fun tile(
     requestParams: RequestBuilders.TileRequest,
     context: Context,
 ): TileBuilders.Tile {
 
-    var currentHydration = LocalStore.load(context, Constants.Preferences.HYDRATION_KEY).toDouble()
-    var goalHydration =
-        LocalStore.load(context, Constants.Preferences.HYDRATION_GOAL_KEY).toDouble()
-    if (goalHydration == 0.0) {
-        goalHydration = 3.0
-        LocalStore.save(context, Constants.Preferences.HYDRATION_GOAL_KEY, goalHydration)
-    }
+    var currentHydration = context.dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] ?: 0.0
+    var goalHydration = context.dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] ?: 3.0
 
     if (requestParams.currentState.lastClickableId == ADD_WATER_025) {
         val addedWater = if (isMetric()) 0.25 else 9.0
         currentHydration += addedWater
-        LocalStore.save(context, Constants.Preferences.HYDRATION_KEY, currentHydration)
-
+        context.dataStore.edit { settings ->
+            settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
+        }
         SendMessageThread(
             context = context, path = Constants.Path.ADD_HYDRATION, msg = addedWater
         ).start()
     } else if (requestParams.currentState.lastClickableId == ADD_WATER_05) {
         val addedWater = if (isMetric()) 0.5 else 20.0
         currentHydration += addedWater
-        LocalStore.save(context, Constants.Preferences.HYDRATION_KEY, currentHydration)
+        context.dataStore.edit { settings ->
+            settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
+        }
         SendMessageThread(
             context = context, path = Constants.Path.ADD_HYDRATION, msg = addedWater
         ).start()
@@ -197,8 +194,8 @@ private fun tileLayout(
         ).build()
 }
 
-@Preview(device = WearDevices.SMALL_ROUND)
-@Preview(device = WearDevices.LARGE_ROUND)
-fun tilePreview(context: Context) = TilePreviewData {
-    tile(it, context)
-}
+//@Preview(device = WearDevices.SMALL_ROUND)
+//@Preview(device = WearDevices.LARGE_ROUND)
+//fun tilePreview(context: Context) = TilePreviewData {
+//    tile(it, context)
+//}
