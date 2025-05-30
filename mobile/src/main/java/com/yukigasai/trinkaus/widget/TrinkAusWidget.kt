@@ -3,13 +3,14 @@ package com.yukigasai.trinkaus.widget
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.glance.ColorFilter
@@ -41,6 +42,7 @@ import androidx.glance.text.TextStyle
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.MainActivity
 import com.yukigasai.trinkaus.presentation.dataStore
+import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Dispatchers
@@ -94,8 +96,9 @@ class TrinkAusWidget : GlanceAppWidget() {
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(GlanceTheme.colors.widgetBackground)
-                .clickable{
-                    PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java),
+                .clickable {
+                    PendingIntent.getActivity(
+                        context, 0, Intent(context, MainActivity::class.java),
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                     ).send()
                 }
@@ -113,13 +116,12 @@ class TrinkAusWidget : GlanceAppWidget() {
                         text = "Loading...",
                         style = TextStyle(
                             color = GlanceTheme.colors.primary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                            fontWeight = FontWeight.Medium
                         )
                     )
                 }
             } else {
-
                 Box(
                     modifier = GlanceModifier.fillMaxWidth().height(waterTargetHeight)
                         .background(GlanceTheme.colors.secondaryContainer)
@@ -131,32 +133,40 @@ class TrinkAusWidget : GlanceAppWidget() {
                 ) {
                     if (size.width > 80.dp) {
                         Text(
-                            text = "Hydration", style = TextStyle(
+                            text = "Hydration",
+                            style = TextStyle(
                                 color = GlanceTheme.colors.onPrimaryContainer,
-                                fontSize = 18.sp,
+                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Spacer(modifier = GlanceModifier.height(8.dp))
                     }
                     Text(
-                        text = "$currentLevel / ${
-                            getVolumeStringWithUnit(goal)
-                        }", style = TextStyle(
-                            color = GlanceTheme.colors.onPrimaryContainer, fontSize = 14.sp
+                        text = "${getVolumeString(currentLevel)} / ${getVolumeStringWithUnit(goal)}",
+                        style = TextStyle(
+                            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                            color = GlanceTheme.colors.onPrimaryContainer,
+                            fontWeight = FontWeight.Medium
                         )
                     )
-                    Spacer(modifier = GlanceModifier.height(4.dp))
+                    Spacer(modifier = GlanceModifier.height(8.dp))
                     if (currentLevel >= goal) {
                         Text(
-                            text = string(R.string.done), style = TextStyle(
-                                color = GlanceTheme.colors.onPrimaryContainer, fontSize = 14.sp
+                            text = string(R.string.done),
+                            style = TextStyle(
+                                color = GlanceTheme.colors.onPrimaryContainer,
+                                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                                fontWeight = FontWeight.Normal
                             )
                         )
                     } else {
                         Text(
-                            text = "${(progress * 100).toInt()}%", style = TextStyle(
-                                color = GlanceTheme.colors.onPrimaryContainer, fontSize = 14.sp
+                            text = "${(progress * 100).toInt()}%",
+                            style = TextStyle(
+                                color = GlanceTheme.colors.onPrimaryContainer,
+                                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                                fontWeight = FontWeight.Normal
                             )
                         )
                     }

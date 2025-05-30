@@ -40,7 +40,7 @@ fun ButtonList(
 
             val amount = if (isMetric()) option.amountMetric else option.amountUS
             val backgroundColor = ColorProvider(
-                color = GlanceTheme.colors.primaryContainer.getColor(context).copy(alpha = 0.2f)
+                color = GlanceTheme.colors.primaryContainer.getColor(context).copy(alpha = 1.0f)
             )
 
             Image(

@@ -1,6 +1,7 @@
 package com.yukigasai.trinkaus.util
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -29,7 +30,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-import kotlin.or
 
 class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -37,7 +37,7 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val context = applicationContext
         val isReminderEnabled =
-            context.dataStore.data.first()[DataStoreKeys.IS_REMINDER_ENABLED] ?: true
+            context.dataStore.data.first()[DataStoreKeys.IS_REMINDER_ENABLED] == true
 
         if (!isReminderEnabled) {
             return@withContext Result.success()
@@ -66,11 +66,20 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
         return@withContext Result.success()
     }
 
+    @SuppressLint("MissingPermission")
     private fun showNotification(
         context: Context,
         hydrationLevel: Double = 0.0,
         percentage: Int = 0,
     ) {
+
+        // Make sure the app has permission to post notifications
+        if (ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
 
         val channel = NotificationChannel(
             Constants.Notification.CHANNEL_ID,
@@ -79,9 +88,6 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
         ).apply {
             description = Constants.Notification.CHANNEL_DESCRIPTION
         }
-        val notificationManager: NotificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
 
         val startAppIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -93,31 +99,15 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val contentText = SpannableString(
-            "You drank ${getVolumeStringWithUnit(hydrationLevel)} of water so far. That's ${percentage}% of your goal. Keep going"
-        ).apply {
-            // Highlight the hydration level
-            val hydrationStart = indexOf(getVolumeStringWithUnit(hydrationLevel))
-            val hydrationEnd = hydrationStart + getVolumeStringWithUnit(hydrationLevel).length
-            setSpan(StyleSpan(Typeface.BOLD), hydrationStart, hydrationEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-            // Highlight the percentage
-            val percentageStart = indexOf("$percentage%")
-            val percentageEnd = percentageStart + "$percentage%".length
-            setSpan(StyleSpan(Typeface.BOLD), percentageStart, percentageEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-
         val builder = NotificationCompat.Builder(context, Constants.Notification.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(Constants.Notification.MESSAGE_TITLE)
-            .setContentText(
+            .setContentTitle(Constants.Notification.MESSAGE_TITLE).setContentText(
                 context.getString(
                     R.string.hydration_notification_text,
                     getVolumeStringWithUnit(hydrationLevel),
                     percentage
                 )
-            )
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            ).setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(startAppPendingIntent)
             .setAutoCancel(true)
 
@@ -145,14 +135,8 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
             )
         }
 
-        with(NotificationManagerCompat.from(context)) {
-            if (ActivityCompat.checkSelfPermission(
-                    context, Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            }
-            notify(Constants.Notification.MESSAGE_ID, builder.build())
-        }
+        val notificationManager = NotificationManagerCompat.from(context)
+        notificationManager.createNotificationChannel(channel)
+        notificationManager.notify(Constants.Notification.MESSAGE_ID, builder.build())
     }
 }

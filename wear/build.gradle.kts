@@ -11,9 +11,9 @@ android {
     defaultConfig {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 34
+        versionCode = 1005
+        versionName = "1.5"
 
     }
 
@@ -61,6 +61,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     debugImplementation(libs.androidx.tiles.tooling)
     implementation("androidx.datastore:datastore-preferences:1.1.4")
-    wearApp(project(":wear"))
     implementation(project(":shared"))
 }
