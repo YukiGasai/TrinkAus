@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class CompanionMessageService : WearableListenerService() {
-
     private lateinit var healthConnectClient: HealthConnectClient
 
     override fun onCreate() {
@@ -27,7 +26,6 @@ class CompanionMessageService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         println("Received message: ${messageEvent.path} : ${String(messageEvent.data)}")
         when (messageEvent.path) {
-
             Constants.Path.REQUEST_HYDRATION -> {
                 CoroutineScope(Dispatchers.IO).launch {
                     val hydrationLevel =
@@ -35,7 +33,7 @@ class CompanionMessageService : WearableListenerService() {
                     SendMessageThread(
                         this@CompanionMessageService,
                         Constants.Path.UPDATE_HYDRATION,
-                        hydrationLevel.toString()
+                        hydrationLevel.toString(),
                     ).start()
                 }
             }
@@ -50,13 +48,13 @@ class CompanionMessageService : WearableListenerService() {
                 }
             }
 
-
             Constants.Path.ADD_HYDRATION -> {
                 val hydration = messageEvent.data.toString(Charsets.UTF_8).toDouble()
 
                 CoroutineScope(Dispatchers.IO).launch {
                     HydrationHelper.writeHydrationLevel(
-                        this@CompanionMessageService, hydration
+                        this@CompanionMessageService,
+                        hydration,
                     )
 
                     val newHydration =
@@ -65,7 +63,7 @@ class CompanionMessageService : WearableListenerService() {
                     SendMessageThread(
                         this@CompanionMessageService,
                         Constants.Path.UPDATE_HYDRATION,
-                        newHydration.toString()
+                        newHydration.toString(),
                     ).start()
 
                     TrinkAusWidget().updateAll(this@CompanionMessageService)

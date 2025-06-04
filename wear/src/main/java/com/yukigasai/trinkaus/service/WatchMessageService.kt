@@ -14,17 +14,17 @@ class WatchMessageService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         println("Received message: ${messageEvent.path}")
         when (messageEvent.path) {
+            Constants.Path.UPDATE_GOAL -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val goal = messageEvent.data.toString(Charsets.UTF_8).toDouble()
 
-             Constants.Path.UPDATE_GOAL -> {
-                 CoroutineScope(Dispatchers.IO).launch {
-                     val goal = messageEvent.data.toString(Charsets.UTF_8).toDouble()
-
-                     this@WatchMessageService.dataStore.edit { preferences ->
-                         preferences[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] = goal
-                     }
-                     TileService.getUpdater(this@WatchMessageService)
-                         .requestUpdate(HydrationTileService::class.java)
-                 }
+                    this@WatchMessageService.dataStore.edit { preferences ->
+                        preferences[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] = goal
+                    }
+                    TileService
+                        .getUpdater(this@WatchMessageService)
+                        .requestUpdate(HydrationTileService::class.java)
+                }
             }
 
             Constants.Path.UPDATE_HYDRATION -> {
@@ -34,7 +34,8 @@ class WatchMessageService : WearableListenerService() {
                     this@WatchMessageService.dataStore.edit { preferences ->
                         preferences[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = hydration
                     }
-                    TileService.getUpdater(this@WatchMessageService)
+                    TileService
+                        .getUpdater(this@WatchMessageService)
                         .requestUpdate(HydrationTileService::class.java)
                 }
             }

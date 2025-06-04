@@ -17,34 +17,37 @@ import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
 
-data class HydrationOption(val icon: Int, val amountUS: Double, val amountMetric: Double)
+data class HydrationOption(
+    val icon: Int,
+    val amountUS: Double,
+    val amountMetric: Double,
+)
 
 @Composable
-fun AddHydrationButton(
-    buttonList: List<HydrationOption>
-) {
-
+fun AddHydrationButton(buttonList: List<HydrationOption>) {
     val context = LocalContext.current
 
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Absolute.SpaceBetween
+        horizontalArrangement = Arrangement.Absolute.SpaceBetween,
     ) {
         Spacer(modifier = Modifier.size(8.dp))
         buttonList.forEach {
-
             val volume = if (isMetric()) it.amountMetric else it.amountUS
             val description = "Add ${getVolumeStringWithUnit(volume)} of water"
             Button(
                 modifier = Modifier.size(42.dp),
                 onClick = {
                     SendMessageThread(
-                        context = context, path = Constants.Path.ADD_HYDRATION, msg = volume
+                        context = context,
+                        path = Constants.Path.ADD_HYDRATION,
+                        msg = volume,
                     ).start()
-                }) {
+                },
+            ) {
                 Icon(
                     painter = painterResource(id = it.icon),
-                    contentDescription = description
+                    contentDescription = description,
                 )
             }
         }

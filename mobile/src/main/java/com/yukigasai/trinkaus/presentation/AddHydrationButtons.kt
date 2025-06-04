@@ -29,7 +29,8 @@ fun AddHydrationButtons(updateHydrationLevel: (newValue: Double) -> Unit) {
     val context = LocalContext.current
 
     Row(
-        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         HydrationOption.all.forEach { option ->
             val volume = if (isMetric()) option.amountMetric else option.amountUS
@@ -42,24 +43,24 @@ fun AddHydrationButtons(updateHydrationLevel: (newValue: Double) -> Unit) {
                 positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                 tooltip = {
                     Text(
-                        modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = MaterialTheme.shapes.small
-                            )
-                            .padding(8.dp),
+                        modifier =
+                            Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = MaterialTheme.shapes.small,
+                                ).padding(8.dp),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        text = description
+                        text = description,
                     )
                 },
-                state = tooltipState
+                state = tooltipState,
             ) {
                 Button(onClick = {
                     updateHydrationLevel(volume)
                 }) {
                     Icon(
                         painter = painterResource(id = option.icon),
-                        contentDescription = description
+                        contentDescription = description,
                     )
                 }
             }

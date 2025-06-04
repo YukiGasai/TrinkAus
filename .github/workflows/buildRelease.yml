@@ -23,6 +23,10 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
+      # Check for correct formatting
+      -   name: Run ktlintCheck
+          run: ./gradlew ktlintCheck
+
       # --- Build & Sign Mobile APK ---
       - name: Build Mobile Release APK
         run: ./gradlew :mobile:assembleRelease
@@ -120,7 +124,7 @@ jobs:
 
 
             DM me if you would like to join the internal testing track for the app.
-            
+
             APKs and AABs are attached below for direct download or sideloading.
           draft: false
           prerelease: false

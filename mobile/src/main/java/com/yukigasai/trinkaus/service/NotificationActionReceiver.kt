@@ -17,7 +17,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NotificationActionReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val action = intent.action
         when (action) {
             Constants.IntentAction.ADD_SMALL -> {
@@ -34,12 +37,16 @@ class NotificationActionReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun updateIntake(context: Context, hydrationOptionIndex: Int) {
-        val amount = if (isMetric()) {
-            HydrationOption.all[hydrationOptionIndex].amountMetric
-        } else {
-            HydrationOption.all[hydrationOptionIndex].amountUS
-        }
+    private fun updateIntake(
+        context: Context,
+        hydrationOptionIndex: Int,
+    ) {
+        val amount =
+            if (isMetric()) {
+                HydrationOption.all[hydrationOptionIndex].amountMetric
+            } else {
+                HydrationOption.all[hydrationOptionIndex].amountUS
+            }
 
         CoroutineScope(Dispatchers.Main).launch {
             HydrationHelper.writeHydrationLevel(context, amount)
@@ -48,7 +55,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
             SendMessageThread(
                 context,
                 Constants.Path.UPDATE_HYDRATION,
-                newHydration
+                newHydration,
             ).start()
 
             context.dataStore.edit { preferences ->

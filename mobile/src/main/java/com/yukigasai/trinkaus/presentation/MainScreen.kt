@@ -45,6 +45,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,27 +95,30 @@ import java.time.ZoneId
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-
 private suspend fun checkPermissions(
-    healthConnectClient: HealthConnectClient, healthPermissions: Set<String>
+    healthConnectClient: HealthConnectClient,
+    healthPermissions: Set<String>,
 ): Boolean {
     val permissions = healthConnectClient.permissionController.getGrantedPermissions()
     return permissions.containsAll(healthPermissions)
 }
 
 fun convertToGraphFormat(
-    historyData: Map<LocalDate, Double>, color: Color
-): List<Bars> {
-    return historyData.map {
+    historyData: Map<LocalDate, Double>,
+    color: Color,
+): List<Bars> =
+    historyData.map {
         Bars(
-            label = it.key.dayOfMonth.toString(), values = listOf(
-                Bars.Data(
-                    value = it.value, color = SolidColor(color)
-                )
-            )
+            label = it.key.dayOfMonth.toString(),
+            values =
+                listOf(
+                    Bars.Data(
+                        value = it.value,
+                        color = SolidColor(color),
+                    ),
+                ),
         )
     }
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -133,38 +137,42 @@ fun MainScreen(
     val showSettingsModal = remember { mutableStateOf(false) }
     val isLoading = remember { stateHolder.isLoading }
     val selectedDate = remember { stateHolder.selectedDate }
-    val maxValue = remember { mutableStateOf(0.0) }
+    val maxValue = remember { mutableDoubleStateOf(0.0) }
     val isLoadingHistory = remember { mutableStateOf(false) }
     val primaryColor = MaterialTheme.colorScheme.primary
     val graphData = remember { mutableStateListOf<Bars>() }
-    var historyJob: Job? = null
-    val healthPermissions = setOf(
-        HealthPermission.getReadPermission(HydrationRecord::class),
-        HealthPermission.getWritePermission(HydrationRecord::class),
-        HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
-    )
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        PermissionController.createRequestPermissionResultContract()
-    ) { grantedPermissions ->
-        scope.launch {
-            if (checkPermissions(healthConnectClient, healthPermissions)) {
-                permissionGranted.value = true
-                stateHolder.refreshDataFromSource()
-            } else {
-                permissionGranted.value = false
+    var historyJob: Job? = null
+    val healthPermissions =
+        setOf(
+            HealthPermission.getReadPermission(HydrationRecord::class),
+            HealthPermission.getWritePermission(HydrationRecord::class),
+            HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+        )
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            PermissionController.createRequestPermissionResultContract(),
+        ) { grantedPermissions ->
+            scope.launch {
+                if (checkPermissions(healthConnectClient, healthPermissions)) {
+                    permissionGranted.value = true
+                    stateHolder.refreshDataFromSource()
+                } else {
+                    permissionGranted.value = false
+                }
             }
         }
-    }
     var confettiJob: Job? = null
     LaunchedEffect(showConfetti.value) {
         confettiJob?.cancel()
-        confettiJob = scope.launch(Dispatchers.IO) {
-            if (showConfetti.value) {
-                delay(2000)
-                showConfetti.value = false
+        confettiJob =
+            scope.launch(Dispatchers.IO) {
+                if (showConfetti.value) {
+                    delay(2000)
+                    showConfetti.value = false
+                }
             }
-        }
     }
 
     LaunchedEffect(Unit) {
@@ -178,25 +186,26 @@ fun MainScreen(
     }
 
     LaunchedEffect(selectedDate.value) {
-        historyJob?.cancel() // Vorherige Coroutine abbrechen, falls sie noch läuft
-        historyJob = scope.launch(Dispatchers.IO) {
-            isLoadingHistory.value = true
-            try {
-                val newHydrationData =
-                    HydrationHelper.getHydrationHistoryForMonth(context, selectedDate.value)
-                maxValue.value = (newHydrationData.values.maxOrNull() ?: 0.0) + 1
-                graphData.clear()
-                // Fetch hydration history for the selected month
-                graphData.addAll(
-                    convertToGraphFormat(
-                        newHydrationData, primaryColor
+        historyJob?.cancel()
+        historyJob =
+            scope.launch(Dispatchers.IO) {
+                isLoadingHistory.value = true
+                try {
+                    val newHydrationData =
+                        HydrationHelper.getHydrationHistoryForMonth(context, selectedDate.value)
+                    maxValue.doubleValue = (newHydrationData.values.maxOrNull() ?: 0.0) + 1
+                    graphData.clear()
+                    // Fetch hydration history for the selected month
+                    graphData.addAll(
+                        convertToGraphFormat(
+                            newHydrationData,
+                            primaryColor,
+                        ),
                     )
-                )
-
-            } finally {
-                isLoadingHistory.value = false
+                } finally {
+                    isLoadingHistory.value = false
+                }
             }
-        }
     }
 
     Scaffold(topBar = {
@@ -208,48 +217,53 @@ fun MainScreen(
                     textAlign = TextAlign.Center,
                 )
             },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-            ),
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
             actions = {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .clickable { showSettingsModal.value = true },
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    modifier =
+                        Modifier
+                            .padding(8.dp)
+                            .clickable { showSettingsModal.value = true },
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
         )
     }) { padding ->
         Box(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp),
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .fillMaxSize()
+                modifier =
+                    Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxSize(),
             ) {
                 when (permissionGranted.value) {
                     null -> {
                         Box(
-                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
                                 CircularProgressIndicator()
                                 Text(
                                     text = stringResource(R.string.checking_permissions),
                                     style = MaterialTheme.typography.titleLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
@@ -257,25 +271,26 @@ fun MainScreen(
 
                     false -> {
                         Box(
-                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
                                 Text(
                                     text = stringResource(R.string.permissions_required),
-                                    style = MaterialTheme.typography.titleLarge
+                                    style = MaterialTheme.typography.titleLarge,
                                 )
                                 Text(
                                     text = stringResource(R.string.permissions_request_text),
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                                 FilledTonalButton(
                                     onClick = { permissionLauncher.launch(healthPermissions) },
-                                    shape = MaterialTheme.shapes.large
+                                    shape = MaterialTheme.shapes.large,
                                 ) {
                                     Text(
                                         text = stringResource(R.string.grant_permissions),
@@ -294,58 +309,63 @@ fun MainScreen(
                                 stateHolder.refreshDataFromSource()
                             },
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
                         ) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(scrollState)
-
+                                modifier =
+                                    Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(scrollState),
                             ) {
                                 Spacer(
-                                    modifier = Modifier.height(16.dp)
+                                    modifier = Modifier.height(16.dp),
                                 )
                                 Card(
                                     modifier = Modifier.size(300.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                                    ),
-                                    shape = CircleShape
+                                    colors =
+                                        CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        ),
+                                    shape = CircleShape,
                                 ) {
                                     Box(
                                         contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
+                                        modifier = Modifier.fillMaxSize(),
                                     ) {
                                         CircularProgressIndicator(
                                             progress = {
-                                                (hydrationLevel.value / hydrationGoal.value).coerceIn(
-                                                    0.0, 1.0
-                                                ).toFloat()
+                                                (hydrationLevel.value / hydrationGoal.value)
+                                                    .coerceIn(
+                                                        0.0,
+                                                        1.0,
+                                                    ).toFloat()
                                             },
                                             modifier = Modifier.fillMaxSize(),
                                             color = MaterialTheme.colorScheme.primaryContainer,
                                             trackColor = MaterialTheme.colorScheme.surfaceVariant,
                                             strokeWidth = 16.dp,
-                                            strokeCap = StrokeCap.Round
+                                            strokeCap = StrokeCap.Round,
                                         )
 
                                         Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally
+                                            horizontalAlignment = Alignment.CenterHorizontally,
                                         ) {
                                             Text(
                                                 text = getVolumeString(hydrationLevel.value),
-                                                style = MaterialTheme.typography.displayMedium.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSurface
-                                                )
+                                                style =
+                                                    MaterialTheme.typography.displayMedium.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                    ),
                                             )
                                             Text(
                                                 text = "/${getVolumeStringWithUnit(hydrationGoal.value)}",
-                                                style = MaterialTheme.typography.headlineSmall.copy(
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
+                                                style =
+                                                    MaterialTheme.typography.headlineSmall.copy(
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    ),
                                             )
                                         }
                                     }
@@ -353,10 +373,12 @@ fun MainScreen(
 
                                 if (hydrationGoal.value > 0) {
                                     Text(
-                                        text = "${((hydrationLevel.value / hydrationGoal.value) * 100).toInt()}% ${stringResource(R.string.of_goal)}",
+                                        text = "${((hydrationLevel.value / hydrationGoal.value) * 100).toInt()}% ${stringResource(
+                                            R.string.of_goal,
+                                        )}",
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.padding(8.dp)
+                                        modifier = Modifier.padding(8.dp),
                                     )
                                 }
 
@@ -364,25 +386,31 @@ fun MainScreen(
                                     showConfetti.value = true
                                     stateHolder.addHydration(it)
                                     SendMessageThread(
-                                        context, Constants.Path.UPDATE_HYDRATION, it
+                                        context,
+                                        Constants.Path.UPDATE_HYDRATION,
+                                        it,
                                     ).start()
                                 }
 
                                 HorizontalDivider()
 
                                 Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
                                     shape = RoundedCornerShape(24.dp),
                                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    tonalElevation = 2.dp
+                                    tonalElevation = 2.dp,
                                 ) {
                                     val showDatePickerDialog = remember { mutableStateOf(false) }
-                                    val datePickerState = rememberDatePickerState(
-                                        initialSelectedDateMillis = selectedDate.value.toEpochDay() * 24 * 60 * 60 * 1000L,
-                                        yearRange = 2010..selectedDate.value.year,
-                                    )
+                                    val datePickerState =
+                                        rememberDatePickerState(
+                                            initialSelectedDateMillis =
+                                                selectedDate.value
+                                                    .toEpochDay() * 24 * 60 * 60 * 1000L,
+                                            yearRange = 2010..selectedDate.value.year,
+                                        )
 
                                     if (showDatePickerDialog.value) {
                                         DatePickerDialog(
@@ -391,9 +419,11 @@ fun MainScreen(
                                                 TextButton(onClick = {
                                                     showDatePickerDialog.value = false
                                                     datePickerState.selectedDateMillis?.let { millis ->
-                                                        selectedDate.value = Instant.ofEpochMilli(millis)
-                                                            .atZone(ZoneId.systemDefault())
-                                                            .toLocalDate()
+                                                        selectedDate.value =
+                                                            Instant
+                                                                .ofEpochMilli(millis)
+                                                                .atZone(ZoneId.systemDefault())
+                                                                .toLocalDate()
                                                     }
                                                 }) {
                                                     Text("OK")
@@ -403,20 +433,21 @@ fun MainScreen(
                                                 TextButton(onClick = { showDatePickerDialog.value = false }) {
                                                     Text(stringResource(R.string.cancel))
                                                 }
-                                            }
+                                            },
                                         ) {
                                             DatePicker(
                                                 showModeToggle = true,
-                                               state = datePickerState,
+                                                state = datePickerState,
                                             )
                                         }
                                     }
                                     Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp, vertical = 4.dp),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                        horizontalArrangement = Arrangement.SpaceBetween,
                                     ) {
                                         IconButton(onClick = {
                                             selectedDate.value = selectedDate.value.minusMonths(1)
@@ -424,33 +455,36 @@ fun MainScreen(
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                                                 contentDescription = "Previous Month",
-                                                tint = MaterialTheme.colorScheme.primary
+                                                tint = MaterialTheme.colorScheme.primary,
                                             )
                                         }
 
-                                        val monthName = selectedDate.value.month.getDisplayName(
-                                            java.time.format.TextStyle.FULL, Locale.getDefault()
-                                        )
+                                        val monthName =
+                                            selectedDate.value.month.getDisplayName(
+                                                java.time.format.TextStyle.FULL,
+                                                Locale.getDefault(),
+                                            )
                                         Text(
                                             text = "$monthName ${selectedDate.value.year}",
                                             style = MaterialTheme.typography.titleMedium,
                                             color = MaterialTheme.colorScheme.onSurface,
                                             textAlign = TextAlign.Center,
-                                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp).clickable {
-                                                showDatePickerDialog.value = true
-                                            }
+                                            modifier =
+                                                Modifier.weight(1f).padding(horizontal = 8.dp).clickable {
+                                                    showDatePickerDialog.value = true
+                                                },
                                         )
 
                                         IconButton(
                                             onClick = {
                                                 selectedDate.value = selectedDate.value.plusMonths(1)
                                             },
-                                            enabled = LocalDate.now() > selectedDate.value
+                                            enabled = LocalDate.now() > selectedDate.value,
                                         ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                                 contentDescription = "Next Month",
-                                                tint = MaterialTheme.colorScheme.primary
+                                                tint = MaterialTheme.colorScheme.primary,
                                             )
                                         }
                                     }
@@ -462,55 +496,67 @@ fun MainScreen(
                                     if (graphData.isNotEmpty()) {
                                         ColumnChart(
                                             modifier = Modifier.fillMaxWidth().height(300.dp).padding(bottom = 10.dp),
-                                            maxValue = maxValue.value,
-                                            labelProperties = LabelProperties(
-                                                enabled = true,
-                                                rotation = LabelProperties.Rotation(
-                                                    degree = -90f,
-                                                    padding = 10.dp
+                                            maxValue = maxValue.doubleValue,
+                                            labelProperties =
+                                                LabelProperties(
+                                                    enabled = true,
+                                                    rotation =
+                                                        LabelProperties.Rotation(
+                                                            degree = -90f,
+                                                            padding = 10.dp,
+                                                        ),
+                                                    textStyle =
+                                                        TextStyle(
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                                            fontWeight = FontWeight.Normal,
+                                                        ),
                                                 ),
-                                                textStyle = TextStyle(
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                                    fontWeight = FontWeight.Normal
+                                            popupProperties =
+                                                PopupProperties(
+                                                    textStyle =
+                                                        TextStyle(
+                                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                                                            fontWeight = FontWeight.Bold,
+                                                        ),
+                                                    containerColor =
+                                                        Color(
+                                                            MaterialTheme.colorScheme.secondaryContainer.value,
+                                                        ),
+                                                    contentBuilder = { dataIndex, valueIndex, value ->
+                                                        "${graphData[dataIndex].label}: ${getVolumeStringWithUnit(value)}"
+                                                    },
                                                 ),
-                                            ),
-                                            popupProperties = PopupProperties(
-                                                textStyle = TextStyle(
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                                                    fontWeight = FontWeight.Bold
+                                            indicatorProperties =
+                                                HorizontalIndicatorProperties(
+                                                    textStyle =
+                                                        TextStyle(
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                                            fontWeight = FontWeight.Normal,
+                                                        ),
                                                 ),
-                                                containerColor = Color(MaterialTheme.colorScheme.secondaryContainer.value),
-                                                contentBuilder = {  dataIndex, valueIndex, value ->
-                                                    "${graphData[dataIndex].label}: ${getVolumeStringWithUnit(value)}"
-                                                }
-                                            ),
-                                            indicatorProperties = HorizontalIndicatorProperties(
-                                                textStyle = TextStyle(
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                                    fontWeight = FontWeight.Normal
-                                                ),
-                                            ),
                                             labelHelperProperties = LabelHelperProperties(enabled = false),
                                             gridProperties = GridProperties(enabled = false),
-                                            barProperties = BarProperties(
-                                                cornerRadius = Bars.Data.Radius.Circular(2.dp),
-                                                thickness = 8.dp
-                                            ),
+                                            barProperties =
+                                                BarProperties(
+                                                    cornerRadius = Bars.Data.Radius.Circular(2.dp),
+                                                    thickness = 8.dp,
+                                                ),
                                             data = graphData,
-                                            animationSpec = spring(
-                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                stiffness = Spring.StiffnessLow
-                                            ),
+                                            animationSpec =
+                                                spring(
+                                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                    stiffness = Spring.StiffnessLow,
+                                                ),
                                         )
                                     } else {
                                         Text(
                                             text = stringResource(R.string.no_history_data),
                                             modifier = Modifier.padding(vertical = 32.dp),
                                             style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                 }
@@ -521,20 +567,24 @@ fun MainScreen(
             }
             if (showConfetti.value) {
                 KonfettiView(
-                    modifier = Modifier.fillMaxSize(), parties = listOf(
-                        Party(
-                            speed = 10f,
-                            maxSpeed = 30f,
-                            damping = 0.9f,
-                            spread = 180,
-                            colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
-                            emitter = Emitter(
-                                duration = 100, TimeUnit.MILLISECONDS
-                            ).perSecond(2000),
-                            position = Position.Relative(0.5, 1.0),
-                            angle = -90
-                        )
-                    )
+                    modifier = Modifier.fillMaxSize(),
+                    parties =
+                        listOf(
+                            Party(
+                                speed = 10f,
+                                maxSpeed = 30f,
+                                damping = 0.9f,
+                                spread = 180,
+                                colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+                                emitter =
+                                    Emitter(
+                                        duration = 100,
+                                        TimeUnit.MILLISECONDS,
+                                    ).perSecond(2000),
+                                position = Position.Relative(0.5, 1.0),
+                                angle = -90,
+                            ),
+                        ),
                 )
             }
         }

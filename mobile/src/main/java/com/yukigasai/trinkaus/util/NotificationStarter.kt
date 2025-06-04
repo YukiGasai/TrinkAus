@@ -10,8 +10,10 @@ import com.yukigasai.trinkaus.shared.Constants
 import java.util.concurrent.TimeUnit
 
 class NotificationStarter : BroadcastReceiver() {
-
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             scheduleHydrationReminders(context)
         }
@@ -19,12 +21,13 @@ class NotificationStarter : BroadcastReceiver() {
 }
 
 fun scheduleHydrationReminders(context: Context) {
-    val repeatingRequest = PeriodicWorkRequestBuilder<NotificationWorker>(1, TimeUnit.HOURS)
-        .build()
+    val repeatingRequest =
+        PeriodicWorkRequestBuilder<NotificationWorker>(1, TimeUnit.HOURS)
+            .build()
 
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
         Constants.Notification.WORKER_TAG,
         ExistingPeriodicWorkPolicy.KEEP,
-        repeatingRequest
+        repeatingRequest,
     )
 }

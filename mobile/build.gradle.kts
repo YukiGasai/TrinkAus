@@ -30,7 +30,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -55,7 +55,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.glance.appwidget)
-
     implementation(libs.androidx.connect.client)
     implementation(libs.ui)
     implementation(libs.androidx.material3.android)
@@ -66,6 +65,6 @@ dependencies {
     implementation(libs.konfetti.compose)
     implementation(libs.play.services.wearable)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation (libs.compose.charts)
+    implementation(libs.compose.charts)
     implementation(project(":shared"))
 }

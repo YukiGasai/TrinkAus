@@ -5,10 +5,7 @@
 
 package com.yukigasai.trinkaus.presentation
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -16,7 +13,6 @@ import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.datastore.core.DataStore
@@ -37,9 +33,7 @@ fun vibrateDevice(context: Context) {
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.DataStore.FILE_NAME)
 
-
 class MainActivity : ComponentActivity() {
-
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
@@ -57,10 +51,11 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        val stateHolder = TrinkAusStateHolder(
-            context = this,
-            dataStore = dataStore,
-        )
+        val stateHolder =
+            TrinkAusStateHolder(
+                context = this,
+                dataStore = dataStore,
+            )
 
         setContent {
             HydrationMainScreen(stateHolder)

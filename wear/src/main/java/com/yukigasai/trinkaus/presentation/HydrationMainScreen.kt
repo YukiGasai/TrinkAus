@@ -54,10 +54,11 @@ fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
 
     LaunchedEffect(hydrationGoal.value) {
         saveJob.value?.cancel()
-        saveJob.value = launch {
-            delay(1000)
-            stateHolder.updateGoal(hydrationGoal.value)
-        }
+        saveJob.value =
+            launch {
+                delay(1000)
+                stateHolder.updateGoal(hydrationGoal.value)
+            }
     }
 
     val handleRotaryEvent = { event: RotaryScrollEvent ->
@@ -68,7 +69,7 @@ fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
         if (isMetric()) {
             tmpGoal.doubleValue = tmpGoal.doubleValue + (event.verticalScrollPixels / 100)
             val oldGoal = hydrationGoal.value
-            val newValue  = (floor(tmpGoal.doubleValue * 10) / 10).coerceIn(1.0, 10.0)
+            val newValue = (floor(tmpGoal.doubleValue * 10) / 10).coerceIn(1.0, 10.0)
             stateHolder.updateGoal(newValue)
             if (oldGoal.toInt() != hydrationGoal.value.toInt()) {
                 vibrateDevice(context)
@@ -85,31 +86,31 @@ fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
         true
     }
 
-
-    val HYDRATION_OPTIONS = listOf<HydrationOption>(
-        HydrationOption(icon = R.drawable.glass_small_icon, amountUS = 5.0, amountMetric = 0.125),
-        HydrationOption(icon = R.drawable.glas_icon, amountUS = 9.0, amountMetric = 0.25),
-        HydrationOption(icon = R.drawable.bottle_icon, amountUS = 20.0, amountMetric = 0.5)
-    )
+    val HYDRATION_OPTIONS =
+        listOf<HydrationOption>(
+            HydrationOption(icon = R.drawable.glass_small_icon, amountUS = 5.0, amountMetric = 0.125),
+            HydrationOption(icon = R.drawable.glas_icon, amountUS = 9.0, amountMetric = 0.25),
+            HydrationOption(icon = R.drawable.bottle_icon, amountUS = 20.0, amountMetric = 0.5),
+        )
 
     MaterialTheme {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background)
-                .onRotaryScrollEvent(handleRotaryEvent)
-                .focusRequester(focusRequester)
-                .focusable(),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colors.background)
+                    .onRotaryScrollEvent(handleRotaryEvent)
+                    .focusRequester(focusRequester)
+                    .focusable(),
+            contentAlignment = Alignment.Center,
         ) {
-
             CircularProgressIndicator(
                 progress = (hydrationLevel.value / hydrationGoal.value).toFloat(),
                 strokeWidth = 8.dp,
                 trackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.2f),
                 startAngle = startAngle,
                 endAngle = endAngle,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
             Column {
                 HydrationInfo(hydrationLevel.value, hydrationGoal.value)
@@ -121,9 +122,9 @@ fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
 }
 
 //
-//@SuppressLint("UnrememberedMutableState")
-//@WearPreviewDevices
-//@Composable
-//fun PreviewWearApp() {
+// @SuppressLint("UnrememberedMutableState")
+// @WearPreviewDevices
+// @Composable
+// fun PreviewWearApp() {
 //    HydrationMainScreen()
-//}
+// }

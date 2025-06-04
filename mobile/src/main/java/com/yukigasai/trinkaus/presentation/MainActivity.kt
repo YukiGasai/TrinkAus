@@ -30,7 +30,6 @@ import kotlinx.coroutines.launch
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.DataStore.FILE_NAME)
 
 class MainActivity : ComponentActivity() {
-
     private lateinit var stateHolder: TrinkAusStateHolder
     private lateinit var healthConnectClient: HealthConnectClient
 
@@ -40,11 +39,14 @@ class MainActivity : ComponentActivity() {
     private fun getPermissionToPostNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
-                    this, Manifest.permission.POST_NOTIFICATIONS
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS,
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                    this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1,
                 )
             }
         }
@@ -53,7 +55,10 @@ class MainActivity : ComponentActivity() {
     /**
      * Handle Intents from Google Assistant.
      */
-    override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
+    override fun onNewIntent(
+        intent: Intent,
+        caller: ComponentCaller,
+    ) {
         super.onNewIntent(intent, caller)
         if (intent.action != null && intent.action.equals("android.intent.action.VIEW")) {
             CoroutineScope(Dispatchers.IO).launch {
@@ -120,7 +125,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surface,
                 ) {
                     MainScreen(stateHolder, healthConnectClient)
                 }

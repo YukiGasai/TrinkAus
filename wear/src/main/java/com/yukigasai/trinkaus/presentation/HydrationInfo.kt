@@ -12,22 +12,28 @@ import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 
 @Composable
-fun HydrationInfo(hydrationLevel: Double, goalHydration: Double) {
+fun HydrationInfo(
+    hydrationLevel: Double,
+    goalHydration: Double,
+) {
     Text(
         text = getVolumeString(hydrationLevel),
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth(),
-        style = TextStyle(
-            color = MaterialTheme.colors.primary,
-            fontSize = 42.sp,
-        )
+        style =
+            TextStyle(
+                color = MaterialTheme.colors.primary,
+                fontSize = 42.sp,
+            ),
     )
     Text(
         text = "/ ${getVolumeStringWithUnit(goalHydration)}",
-        textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
-        style = TextStyle(
-            color = MaterialTheme.colors.onBackground,
-            fontSize = MaterialTheme.typography.caption1.fontSize,
-        )
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
+        style =
+            TextStyle(
+                color = MaterialTheme.colors.onBackground,
+                fontSize = MaterialTheme.typography.caption1.fontSize,
+            ),
     )
 }

@@ -7,7 +7,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
@@ -55,9 +54,9 @@ class TrinkAusWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(
-        context: Context, id: GlanceId
+        context: Context,
+        id: GlanceId,
     ) {
-
         val dataStore: DataStore<Preferences> = context.dataStore
         provideContent {
             val stateHolder = remember { TrinkAusStateHolder(context, dataStore) }
@@ -74,9 +73,7 @@ class TrinkAusWidget : GlanceAppWidget() {
     }
 
     @Composable
-    fun GlanceContent(
-        stateHolder: TrinkAusStateHolder
-    ) {
+    fun GlanceContent(stateHolder: TrinkAusStateHolder) {
         val size = LocalSize.current
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
@@ -88,11 +85,8 @@ class TrinkAusWidget : GlanceAppWidget() {
         val progress = min(1f, max(0f, currentLevel.toFloat() / goal.toFloat()))
         val waterTargetHeight = size.height * progress
 
-
-
         LaunchedEffect(Unit) {
             stateHolder.refreshDataFromSource()
-
         }
 
         LaunchedEffect(size) {
@@ -101,75 +95,87 @@ class TrinkAusWidget : GlanceAppWidget() {
 
         Box(
             contentAlignment = Alignment.BottomEnd,
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(GlanceTheme.colors.widgetBackground)
-                .clickable {
-                    PendingIntent.getActivity(
-                        context, 0, Intent(context, MainActivity::class.java),
-                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                    ).send()
-                }
+            modifier =
+                GlanceModifier
+                    .fillMaxSize()
+                    .background(GlanceTheme.colors.widgetBackground)
+                    .clickable {
+                        PendingIntent
+                            .getActivity(
+                                context,
+                                0,
+                                Intent(context, MainActivity::class.java),
+                                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                            ).send()
+                    },
         ) {
             if (hydrationLevel.value < 0) {
                 Column(
                     modifier = GlanceModifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     CircularProgressIndicator(
-                        color = GlanceTheme.colors.primary
+                        color = GlanceTheme.colors.primary,
                     )
                     Text(
                         text = string(R.string.loading),
-                        style = TextStyle(
-                            color = GlanceTheme.colors.primary,
-                            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                            fontWeight = FontWeight.Medium
-                        )
+                        style =
+                            TextStyle(
+                                color = GlanceTheme.colors.primary,
+                                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                                fontWeight = FontWeight.Medium,
+                            ),
                     )
                 }
             } else {
                 Box(
                     contentAlignment = Alignment.BottomEnd,
-                    modifier = GlanceModifier
-                        .fillMaxSize()
-                        .background(GlanceTheme.colors.widgetBackground)
-                        .clickable {
-                            PendingIntent.getActivity(
-                                context, 0, Intent(context, MainActivity::class.java),
-                                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                            ).send()
-                        }
+                    modifier =
+                        GlanceModifier
+                            .fillMaxSize()
+                            .background(GlanceTheme.colors.widgetBackground)
+                            .clickable {
+                                PendingIntent
+                                    .getActivity(
+                                        context,
+                                        0,
+                                        Intent(context, MainActivity::class.java),
+                                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                                    ).send()
+                            },
                 ) {
                     if (hydrationLevel.value < 0) {
                         Column(
                             modifier = GlanceModifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             CircularProgressIndicator(
-                                color = GlanceTheme.colors.primary
+                                color = GlanceTheme.colors.primary,
                             )
                             Text(
                                 text = string(R.string.loading),
-                                style = TextStyle(
-                                    color = GlanceTheme.colors.primary,
-                                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                                    fontWeight = FontWeight.Medium
-                                )
+                                style =
+                                    TextStyle(
+                                        color = GlanceTheme.colors.primary,
+                                        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                                        fontWeight = FontWeight.Medium,
+                                    ),
                             )
                         }
                     } else {
                         Box(
-                            modifier = GlanceModifier
-                                .fillMaxWidth()
-                                .height(waterTargetHeight)
+                            modifier =
+                                GlanceModifier
+                                    .fillMaxWidth()
+                                    .height(waterTargetHeight),
                         ) {
                             Box(
-                                modifier = GlanceModifier
-                                    .fillMaxSize()
-                                    .background(GlanceTheme.colors.secondaryContainer)
+                                modifier =
+                                    GlanceModifier
+                                        .fillMaxSize()
+                                        .background(GlanceTheme.colors.secondaryContainer),
                             ) {}
 
                             if (waterTargetHeight > 0.dp) {
@@ -178,10 +184,10 @@ class TrinkAusWidget : GlanceAppWidget() {
                                     contentDescription = "Water wave decoration",
                                     colorFilter = ColorFilter.tint(GlanceTheme.colors.widgetBackground),
                                     contentScale = ContentScale.FillBounds,
-                                    modifier = GlanceModifier
-                                        .fillMaxWidth()
-                                        .height(16.dp)
-
+                                    modifier =
+                                        GlanceModifier
+                                            .fillMaxWidth()
+                                            .height(16.dp),
                                 )
                             }
                         }
@@ -191,46 +197,50 @@ class TrinkAusWidget : GlanceAppWidget() {
                 Column(
                     modifier = GlanceModifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (size.height > 110.dp && size.width > 90.dp) {
                         Text(
                             text = "Hydration",
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onPrimaryContainer,
-                                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                                fontWeight = FontWeight.Bold
-                            )
+                            style =
+                                TextStyle(
+                                    color = GlanceTheme.colors.onPrimaryContainer,
+                                    fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                                    fontWeight = FontWeight.Bold,
+                                ),
                         )
                     }
                     Spacer(modifier = GlanceModifier.height(8.dp))
                     Text(
                         text = "${getVolumeString(currentLevel)} / ${getVolumeStringWithUnit(goal)}",
-                        style = TextStyle(
-                            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                            color = GlanceTheme.colors.onPrimaryContainer,
-                            fontWeight = FontWeight.Medium
-                        )
+                        style =
+                            TextStyle(
+                                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                                color = GlanceTheme.colors.onPrimaryContainer,
+                                fontWeight = FontWeight.Medium,
+                            ),
                     )
                     if (size.height > 110.dp) {
                         Spacer(modifier = GlanceModifier.height(8.dp))
                         if (currentLevel >= goal) {
                             Text(
                                 text = string(R.string.done),
-                                style = TextStyle(
-                                    color = GlanceTheme.colors.onPrimaryContainer,
-                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                                    fontWeight = FontWeight.Normal
-                                )
+                                style =
+                                    TextStyle(
+                                        color = GlanceTheme.colors.onPrimaryContainer,
+                                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                                        fontWeight = FontWeight.Normal,
+                                    ),
                             )
                         } else {
                             Text(
                                 text = "${(progress * 100).toInt()}%",
-                                style = TextStyle(
-                                    color = GlanceTheme.colors.onPrimaryContainer,
-                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                                    fontWeight = FontWeight.Normal
-                                )
+                                style =
+                                    TextStyle(
+                                        color = GlanceTheme.colors.onPrimaryContainer,
+                                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                                        fontWeight = FontWeight.Normal,
+                                    ),
                             )
                         }
                     }
@@ -241,11 +251,12 @@ class TrinkAusWidget : GlanceAppWidget() {
                     provider = ImageProvider(R.drawable.baseline_refresh_24),
                     contentDescription = "Refresh",
                     colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
-                    modifier = GlanceModifier.padding(4.dp).clickable {
-                        scope.launch(Dispatchers.IO) {
-                            TrinkAusWidget().updateAll(context)
-                        }
-                    }
+                    modifier =
+                        GlanceModifier.padding(4.dp).clickable {
+                            scope.launch(Dispatchers.IO) {
+                                TrinkAusWidget().updateAll(context)
+                            }
+                        },
                 )
             }
         }

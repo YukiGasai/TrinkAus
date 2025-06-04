@@ -8,10 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -68,10 +65,11 @@ fun SettingsPopup(
         sheetState = sheetState,
     ) {
         Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier =
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Header
             Text(
@@ -79,29 +77,29 @@ fun SettingsPopup(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
             )
 
             // Water Intake Section
             Surface(
                 shape = MaterialTheme.shapes.medium,
                 tonalElevation = 1.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.daily_water_intake_goal),
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
 
                     Text(
                         text = getVolumeStringWithUnit(hydrationGoal.value),
                         style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
 
                     Slider(
@@ -110,20 +108,27 @@ fun SettingsPopup(
                             scope.launch(Dispatchers.IO) {
                                 context.dataStore.edit { preferences ->
                                     preferences[DataStoreKeys.HYDRATION_GOAL] =
-                                        if (isMetric()) (it * 10).roundToInt() / 10.0 else it.toInt()
-                                            .toDouble()
+                                        if (isMetric()) {
+                                            (it * 10).roundToInt() / 10.0
+                                        } else {
+                                            it
+                                                .toInt()
+                                                .toDouble()
+                                        }
                                 }
                             }
                         },
                         onValueChangeFinished = {
                             scope.launch(Dispatchers.IO) {
                                 SendMessageThread(
-                                    context, Constants.Path.UPDATE_GOAL, hydrationGoal.value
+                                    context,
+                                    Constants.Path.UPDATE_GOAL,
+                                    hydrationGoal.value,
                                 ).start()
                             }
                         },
                         valueRange = if (isMetric()) 1f..10f else 1f..200.0f,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
@@ -132,22 +137,22 @@ fun SettingsPopup(
             Surface(
                 shape = MaterialTheme.shapes.medium,
                 tonalElevation = 1.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     // Reminder Toggle
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(
                             text = stringResource(R.string.enable_reminders),
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Switch(
                             checked = reminderEnabled.value,
@@ -157,26 +162,26 @@ fun SettingsPopup(
                                         preferences[DataStoreKeys.IS_REMINDER_ENABLED] = isChecked
                                     }
                                 }
-                            }
+                            },
                         )
                     }
 
                     if (reminderEnabled.value) {
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 8.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant
+                            color = MaterialTheme.colorScheme.outlineVariant,
                         )
 
                         Text(
                             text = stringResource(R.string.reminder_time_range),
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
 
                         Text(
                             text = "${reminderStartTime.value.toInt()}:00 - ${reminderEndTime.value.toInt()}:00",
                             style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
 
                         RangeSlider(
@@ -191,23 +196,23 @@ fun SettingsPopup(
                             },
                             valueRange = 0f..24f,
                             steps = 23,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
 
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 8.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant
+                            color = MaterialTheme.colorScheme.outlineVariant,
                         )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Text(
                                 text = stringResource(R.string.reminder_despite_goal),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Switch(
                                 checked = reminderDespiteGoal.value,
@@ -217,7 +222,7 @@ fun SettingsPopup(
                                             preferences[DataStoreKeys.REMINDER_DESPITE_GOAL] = isChecked
                                         }
                                     }
-                                }
+                                },
                             )
                         }
                     }
@@ -227,19 +232,21 @@ fun SettingsPopup(
             // Save Button
             TextButton(
                 onClick = { updateShowSettingsModal(false) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 16.dp),
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, bottom = 16.dp),
+                colors =
+                    ButtonDefaults.textButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
                 shape = MaterialTheme.shapes.medium,
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(vertical = 12.dp),
             ) {
                 Text(
                     text = stringResource(R.string.save),
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
 
@@ -249,19 +256,21 @@ fun SettingsPopup(
                         OneTimeWorkRequestBuilder<NotificationWorker>().build()
                     WorkManager.getInstance(context).enqueue(workRequest)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 16.dp),
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, bottom = 16.dp),
+                colors =
+                    ButtonDefaults.textButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
                 shape = MaterialTheme.shapes.medium,
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(vertical = 12.dp),
             ) {
                 Text(
                     text = stringResource(R.string.test_notification),
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
         }

@@ -43,36 +43,36 @@ private const val ADD_WATER_05 = "add_water_05"
  */
 @OptIn(ExperimentalHorologistApi::class)
 class HydrationTileService : SuspendingTileService() {
+    override suspend fun resourcesRequest(requestParams: RequestBuilders.ResourcesRequest) = resources()
 
-    override suspend fun resourcesRequest(
-        requestParams: RequestBuilders.ResourcesRequest
-    ) = resources()
-
-    override suspend fun tileRequest(
-        requestParams: RequestBuilders.TileRequest
-    ) = tile(requestParams, this)
+    override suspend fun tileRequest(requestParams: RequestBuilders.TileRequest) = tile(requestParams, this)
 
     override fun onTileEnterEvent(requestParams: EventBuilders.TileEnterEvent) {
         super.onTileEnterEvent(requestParams)
         SendMessageThread(
-            context = this, path = Constants.Path.REQUEST_HYDRATION, msg = ""
+            context = this,
+            path = Constants.Path.REQUEST_HYDRATION,
+            msg = "",
         ).start()
     }
 }
 
-private fun resources(): ResourceBuilders.Resources {
-    return ResourceBuilders.Resources.Builder().setVersion(RESOURCES_VERSION).addIdToImageMapping(
-            GLASS_ICON, drawableResToImageResource(R.drawable.glas_icon)
+private fun resources(): ResourceBuilders.Resources =
+    ResourceBuilders.Resources
+        .Builder()
+        .setVersion(RESOURCES_VERSION)
+        .addIdToImageMapping(
+            GLASS_ICON,
+            drawableResToImageResource(R.drawable.glas_icon),
         ).addIdToImageMapping(
-            BOTTLE_ICON, drawableResToImageResource(R.drawable.bottle_icon)
+            BOTTLE_ICON,
+            drawableResToImageResource(R.drawable.bottle_icon),
         ).build()
-}
 
 private suspend fun tile(
     requestParams: RequestBuilders.TileRequest,
     context: Context,
 ): TileBuilders.Tile {
-
     var currentHydration = context.dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] ?: 0.0
     var goalHydration = context.dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] ?: 3.0
 
@@ -83,7 +83,9 @@ private suspend fun tile(
             settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
         }
         SendMessageThread(
-            context = context, path = Constants.Path.ADD_HYDRATION, msg = addedWater
+            context = context,
+            path = Constants.Path.ADD_HYDRATION,
+            msg = addedWater,
         ).start()
     } else if (requestParams.currentState.lastClickableId == ADD_WATER_05) {
         val addedWater = if (isMetric()) 0.5 else 20.0
@@ -92,21 +94,31 @@ private suspend fun tile(
             settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
         }
         SendMessageThread(
-            context = context, path = Constants.Path.ADD_HYDRATION, msg = addedWater
+            context = context,
+            path = Constants.Path.ADD_HYDRATION,
+            msg = addedWater,
         ).start()
     }
 
+    val singleTileTimeline =
+        TimelineBuilders.Timeline
+            .Builder()
+            .addTimelineEntry(
+                TimelineBuilders.TimelineEntry
+                    .Builder()
+                    .setLayout(
+                        LayoutElementBuilders.Layout
+                            .Builder()
+                            .setRoot(tileLayout(requestParams, context, currentHydration, goalHydration))
+                            .build(),
+                    ).build(),
+            ).build()
 
-    val singleTileTimeline = TimelineBuilders.Timeline.Builder().addTimelineEntry(
-        TimelineBuilders.TimelineEntry.Builder().setLayout(
-            LayoutElementBuilders.Layout.Builder()
-                .setRoot(tileLayout(requestParams, context, currentHydration, goalHydration))
-                .build()
-        ).build()
-    ).build()
-
-    return TileBuilders.Tile.Builder().setResourcesVersion(RESOURCES_VERSION)
-        .setTileTimeline(singleTileTimeline).build()
+    return TileBuilders.Tile
+        .Builder()
+        .setResourcesVersion(RESOURCES_VERSION)
+        .setTileTimeline(singleTileTimeline)
+        .build()
 }
 
 private fun tileLayout(
@@ -115,87 +127,136 @@ private fun tileLayout(
     currentHydration: Double = 0.0,
     goalHydration: Double = 3.0,
 ): LayoutElementBuilders.LayoutElement {
-
     val progress = (currentHydration / goalHydration).toFloat()
 
     val startAngle = 180 + PROGRESS_BAR_GAP_SIZE
     val endAngle = startAngle + 360 - PROGRESS_BAR_GAP_SIZE * 2
 
-    return LayoutElementBuilders.Box.Builder().setModifiers(
-            ModifiersBuilders.Modifiers.Builder().setClickable(
-                    ModifiersBuilders.Clickable.Builder().setOnClick(
-                            ActionBuilders.LaunchAction.Builder().setAndroidActivity(
-                                    ActionBuilders.AndroidActivity.Builder()
+    return LayoutElementBuilders.Box
+        .Builder()
+        .setModifiers(
+            ModifiersBuilders.Modifiers
+                .Builder()
+                .setClickable(
+                    ModifiersBuilders.Clickable
+                        .Builder()
+                        .setOnClick(
+                            ActionBuilders.LaunchAction
+                                .Builder()
+                                .setAndroidActivity(
+                                    ActionBuilders.AndroidActivity
+                                        .Builder()
                                         .setClassName(MainActivity::class.java.name)
-                                        .setPackageName(context.packageName).build()
-                                ).build()
-                        ).setVisualFeedbackEnabled(true).build()
-                ).build()
+                                        .setPackageName(context.packageName)
+                                        .build(),
+                                ).build(),
+                        ).setVisualFeedbackEnabled(true)
+                        .build(),
+                ).build(),
         ).setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
-        .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER).setWidth(expand())
-        .setHeight(expand()).addContent(
-            CircularProgressIndicator.Builder().setStartAngle(startAngle).setEndAngle(endAngle)
-                .setProgress(progress).setStrokeWidth(8f).build()
+        .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
+        .setWidth(expand())
+        .setHeight(expand())
+        .addContent(
+            CircularProgressIndicator
+                .Builder()
+                .setStartAngle(startAngle)
+                .setEndAngle(endAngle)
+                .setProgress(progress)
+                .setStrokeWidth(8f)
+                .build(),
         ).addContent(
-            LayoutElementBuilders.Column.Builder()
+            LayoutElementBuilders.Column
+                .Builder()
                 .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
-                .setWidth(expand()).addContent(
-                    Text.Builder(context, context.getString(R.string.water))
+                .setWidth(expand())
+                .addContent(
+                    Text
+                        .Builder(context, context.getString(R.string.water))
                         .setColor(argb(Colors.DEFAULT.onSurface))
-                        .setTypography(Typography.TYPOGRAPHY_BODY1).build()
+                        .setTypography(Typography.TYPOGRAPHY_BODY1)
+                        .build(),
                 ).addContent(
-                    LayoutElementBuilders.Spacer.Builder().setHeight(DimensionBuilders.dp(8f))
-                        .build()
+                    LayoutElementBuilders.Spacer
+                        .Builder()
+                        .setHeight(DimensionBuilders.dp(8f))
+                        .build(),
                 ).addContent(
-                    Text.Builder(context, getVolumeString(currentHydration))
-                        .setColor(argb(Colors.DEFAULT.primary)).build()
+                    Text
+                        .Builder(context, getVolumeString(currentHydration))
+                        .setColor(argb(Colors.DEFAULT.primary))
+                        .build(),
                 ).addContent(
-                    LayoutElementBuilders.Spacer.Builder().setHeight(DimensionBuilders.dp(8f))
-                        .build()
+                    LayoutElementBuilders.Spacer
+                        .Builder()
+                        .setHeight(DimensionBuilders.dp(8f))
+                        .build(),
                 ).addContent(
                     if (currentHydration >= goalHydration) {
-                        Text.Builder(context, context.getString(R.string.done))
+                        Text
+                            .Builder(context, context.getString(R.string.done))
                             .setColor(argb(Colors.DEFAULT.onSurface))
-                            .setTypography(Typography.TYPOGRAPHY_CAPTION1).build()
+                            .setTypography(Typography.TYPOGRAPHY_CAPTION1)
+                            .build()
                     } else {
-                        Text.Builder(
-                            context,
-                            "${getVolumeStringWithUnit(goalHydration - currentHydration)} ${
-                                context.getString(
-                                    R.string.missing
-                                )
-                            }"
-                        ).setColor(argb(Colors.DEFAULT.onSurface))
-                            .setTypography(Typography.TYPOGRAPHY_CAPTION1).build()
-                    }
-                ).addContent(
-                    LayoutElementBuilders.Spacer.Builder().setHeight(DimensionBuilders.dp(8f))
-                        .build()
-                ).addContent(
-                    LayoutElementBuilders.Row.Builder().addContent(
-                            Button.Builder(
+                        Text
+                            .Builder(
                                 context,
-                                ModifiersBuilders.Clickable.Builder().setVisualFeedbackEnabled(true)
-                                    .setOnClick(ActionBuilders.LoadAction.Builder().build())
-                                    .setId(ADD_WATER_025).build()
-                            ).setSize(DimensionBuilders.dp(40f)).setIconContent(GLASS_ICON).build()
+                                "${getVolumeStringWithUnit(goalHydration - currentHydration)} ${
+                                    context.getString(
+                                        R.string.missing,
+                                    )
+                                }",
+                            ).setColor(argb(Colors.DEFAULT.onSurface))
+                            .setTypography(Typography.TYPOGRAPHY_CAPTION1)
+                            .build()
+                    },
+                ).addContent(
+                    LayoutElementBuilders.Spacer
+                        .Builder()
+                        .setHeight(DimensionBuilders.dp(8f))
+                        .build(),
+                ).addContent(
+                    LayoutElementBuilders.Row
+                        .Builder()
+                        .addContent(
+                            Button
+                                .Builder(
+                                    context,
+                                    ModifiersBuilders.Clickable
+                                        .Builder()
+                                        .setVisualFeedbackEnabled(true)
+                                        .setOnClick(ActionBuilders.LoadAction.Builder().build())
+                                        .setId(ADD_WATER_025)
+                                        .build(),
+                                ).setSize(DimensionBuilders.dp(40f))
+                                .setIconContent(GLASS_ICON)
+                                .build(),
                         ).addContent(
-                            LayoutElementBuilders.Spacer.Builder()
-                                .setWidth(DimensionBuilders.dp(8f)).build()
+                            LayoutElementBuilders.Spacer
+                                .Builder()
+                                .setWidth(DimensionBuilders.dp(8f))
+                                .build(),
                         ).addContent(
-                            Button.Builder(
-                                context,
-                                ModifiersBuilders.Clickable.Builder().setVisualFeedbackEnabled(true)
-                                    .setOnClick(ActionBuilders.LoadAction.Builder().build())
-                                    .setId(ADD_WATER_05).build()
-                            ).setSize(DimensionBuilders.dp(40f)).setIconContent(BOTTLE_ICON).build()
-                        ).build()
-                ).build()
+                            Button
+                                .Builder(
+                                    context,
+                                    ModifiersBuilders.Clickable
+                                        .Builder()
+                                        .setVisualFeedbackEnabled(true)
+                                        .setOnClick(ActionBuilders.LoadAction.Builder().build())
+                                        .setId(ADD_WATER_05)
+                                        .build(),
+                                ).setSize(DimensionBuilders.dp(40f))
+                                .setIconContent(BOTTLE_ICON)
+                                .build(),
+                        ).build(),
+                ).build(),
         ).build()
 }
 
-//@Preview(device = WearDevices.SMALL_ROUND)
-//@Preview(device = WearDevices.LARGE_ROUND)
-//fun tilePreview(context: Context) = TilePreviewData {
+// @Preview(device = WearDevices.SMALL_ROUND)
+// @Preview(device = WearDevices.LARGE_ROUND)
+// fun tilePreview(context: Context) = TilePreviewData {
 //    tile(it, context)
-//}
+// }
