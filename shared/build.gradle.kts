@@ -41,5 +41,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.play.services.wearable)
-    implementation("androidx.datastore:datastore-preferences:1.1.4")
+    implementation(libs.androidx.datastore.preferences)
 }

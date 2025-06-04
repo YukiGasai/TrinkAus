@@ -15,4 +15,14 @@
     <string name="save">Speichern</string>
     <string name="reminder_despite_goal">Auch nach Ziel</string>
     <string name="hydration_notification_text">Du heute hast schon %1$s  Wasser getrunken. Das sind %2$d%% deines Ziels. Bleib dran.</string>
+    <string name="test_notification">Test Benachrichtigung</string>
+    <string name="checking_permissions">Berechtigungen werden geprüft...</string>
+    <string name="permissions_required">Berechtigungen werden benötigt</string>
+    <string name="permissions_request_text">Bitte gewähren Sie Zugriff auf Health Connect, um Ihre Wasseraufnahme zu verwalten</string>
+    <string name="grant_permissions">Berechtigungen erteilen</string>
+    <string name="no_history_data">Keine Daten für diesen Monat gefunden.</string>
+    <string name="loading">Wird geladen...</string>
+    <string name="hydration_notification_title">Zeit für ein Wasser</string>
+    <string name="of_goal">vom Ziel</string>
+    <string name="cancel">Abbrechen</string>
 </resources>

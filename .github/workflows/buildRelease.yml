@@ -1,65 +1,166 @@
-name: Android CI
-on: 
+name: Android CI & CD
+
+on:
   push:
     tags:
-    - '*'
+      - '*'
+
 jobs:
-  build:
-    name: Generate App APK
+  build_sign_release:
+    name: Build, Sign, Release (APK & AAB)
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
-    - name: Set up JDK
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-        cache: 'gradle'
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
 
-    - name: Change wrapper permissions
-      run: chmod +x ./gradlew
+      # --- Mobile App: APK ---
+      - name: Build Mobile Release APK
+        run: ./gradlew :mobile:assembleRelease
 
-    - name: Bundle 'debug' with Gradle
-      run: ./gradlew assembleDebug
+      - name: Sign Mobile APK
+        id: sign_mobile_apk
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: mobile/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE }}
+          alias: ${{ secrets.SIGNING_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_ALIAS_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
 
-    - name: List output folder
-      run: ls -la mobile/build/outputs/apk/debug
+      # --- Mobile App: AAB ---
+      - name: Build Mobile Release AAB
+        run: ./gradlew :mobile:bundleRelease
 
-    - name: Sign APK
-      id: sign_apk
-      uses: r0adkll/sign-android-release@v1
-      with:
-        releaseDirectory: mobile/build/outputs/apk/debug
-        signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE }}
-        alias: ${{ secrets.SIGNING_ALIAS }}
-        keyStorePassword: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
-        keyPassword: ${{ secrets.SIGNING_ALIAS_PASSWORD }}
-      env:
-        BUILD_TOOLS_VERSION: "34.0.0"
+      - name: Sign Mobile AAB
+        id: sign_mobile_aab
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: mobile/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE }}
+          alias: ${{ secrets.SIGNING_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_ALIAS_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
 
+      # --- Wear OS App: APK ---
+      - name: Build Wear OS Release APK
+        run: ./gradlew :wear:assembleRelease
 
-    - run: echo "Build status report=${{ job.status }}."
+      - name: Sign Wear OS APK
+        id: sign_wear_apk
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: wear/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE }}
+          alias: ${{ secrets.SIGNING_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_ALIAS_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }} release
+      # --- Wear OS App: AAB ---
+      - name: Build Wear OS Release AAB
+        run: ./gradlew :wear:bundleRelease
 
-    - name: Upload Release APK
-      id: upload_release_asset
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.sign_apk.outputs.signedReleaseFile }}
-        asset_name: ${{ github.event.repository.name }}.apk
-        asset_content_type: application/zip
-    - run: echo "Upload returned with status=${{ job.status }}."
+      - name: Sign Wear OS AAB
+        id: sign_wear_aab
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: wear/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE }}
+          alias: ${{ secrets.SIGNING_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_ALIAS_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
+
+      # --- Create GitHub Release (for APKs & AABs) ---
+      - name: Create GitHub Release
+        id: create_gh_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            Release of version ${{ github.ref_name }}.
+            Mobile and Wear APKs & AABs attached.
+            AABs also uploaded to Google Play.
+          draft: false
+          prerelease: false
+
+      # --- Upload APKs to GitHub Release ---
+      - name: Upload Mobile APK to GitHub Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_gh_release.outputs.upload_url }}
+          asset_path: ${{ steps.sign_mobile_apk.outputs.signedReleaseFile }}
+          asset_name: trinkaus-mobile.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload Wear OS APK to GitHub Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_gh_release.outputs.upload_url }}
+          asset_path: ${{ steps.sign_wear_apk.outputs.signedReleaseFile }}
+          asset_name: trinkaus-wear.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      # --- Upload AABs to GitHub Release ---
+      - name: Upload Mobile AAB to GitHub Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_gh_release.outputs.upload_url }}
+          asset_path: ${{ steps.sign_mobile_aab.outputs.signedReleaseFile }}
+          asset_name: trinkaus-mobile.aab
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload Wear OS AAB to GitHub Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_gh_release.outputs.upload_url }}
+          asset_path: ${{ steps.sign_wear_aab.outputs.signedReleaseFile }}
+          asset_name: trinkaus-wear.aab
+          asset_content_type: application/vnd.android.package-archive
+
+      # --- Upload AABs to Google Play Store ---
+      - name: Upload Mobile AAB to Google Play
+        uses: r0adkll/upload-google-play@v1.1.1
+        with:
+          releaseFiles: ${{ steps.sign_mobile_aab.outputs.signedReleaseFile }}
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.yukigasai.trinkaus
+          track: "internal"
+
+      - name: Upload Wear OS AAB to Google Play
+        uses: r0adkll/upload-google-play@v1.1.1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          releaseFiles: ${{ steps.sign_wear_aab.outputs.signedReleaseFile }}
+          packageName: com.yukigasai.trinkaus
+          track: "wear:internal"
+
+      - name: Final Status Report
+        run: echo "Build, sign, and deployment process completed with status=${{ job.status }}."

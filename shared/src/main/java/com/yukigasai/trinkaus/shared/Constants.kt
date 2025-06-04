@@ -24,8 +24,6 @@ object Constants {
         const val CHANNEL_NAME = "Hydration Reminder"
         const val CHANNEL_DESCRIPTION = "Channel for hydration reminders"
         const val MESSAGE_ID = 1
-        const val MESSAGE_TITLE = "Time to Drink Water"
-        const val MESSAGE_CONTENT = "Remember to drink water to stay hydrated!"
         const val WORKER_TAG = "hydration_reminder_worker"
     }
 

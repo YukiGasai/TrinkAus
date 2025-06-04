@@ -12,8 +12,8 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.5"
+        versionCode = 6
+        versionName = "1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -58,16 +58,16 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.glance.appwidget)
 
-    implementation("androidx.health.connect:connect-client:1.1.0-alpha12")
-    implementation("androidx.compose.ui:ui:1.7.8")
-    implementation("androidx.compose.material3:material3-android:1.3.1")
-    implementation("androidx.compose.runtime:runtime:1.7.8")
-    implementation("androidx.activity:activity-compose:1.7.2")
-    implementation("androidx.compose.ui:ui-graphics:1.7.8")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.7.8")
-
-    implementation("com.google.android.gms:play-services-wearable:19.0.0")
-    implementation("androidx.work:work-runtime-ktx:2.7.1")
-
+    implementation(libs.androidx.connect.client)
+    implementation(libs.ui)
+    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.runtime)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.ui.graphics)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.konfetti.compose)
+    implementation(libs.play.services.wearable)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation (libs.compose.charts)
     implementation(project(":shared"))
 }

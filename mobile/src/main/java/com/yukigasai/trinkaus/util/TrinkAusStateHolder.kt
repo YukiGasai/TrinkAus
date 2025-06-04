@@ -1,6 +1,8 @@
 package com.yukigasai.trinkaus.util
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -13,10 +15,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class TrinkAusStateHolder(
     private val context: Context, private val dataStore: DataStore<Preferences>
 ) {
+
+    val isLoading = mutableStateOf(false)
+    val selectedDate = mutableStateOf(LocalDate.now())
 
     val hydrationLevel: Flow<Double> = dataStore.data.map { preferences ->
             preferences[DataStoreKeys.HYDRATION_LEVEL] ?: 0.0
@@ -51,12 +57,15 @@ class TrinkAusStateHolder(
 
     fun refreshDataFromSource() {
         CoroutineScope(Dispatchers.IO).launch {
+            isLoading.value = true
             _refreshDataFromSource()
+            isLoading.value = false
         }
     }
 
     fun addHydration(newLevel: Double) {
         CoroutineScope(Dispatchers.Main).launch {
+            isLoading.value = true
             HydrationHelper.writeHydrationLevel(context, newLevel)
             _refreshDataFromSource()
 
@@ -65,6 +74,7 @@ class TrinkAusStateHolder(
             SendMessageThread(
                 context, Constants.Path.UPDATE_HYDRATION, currentLevel
             ).start()
+            isLoading.value = false
         }
     }
 }

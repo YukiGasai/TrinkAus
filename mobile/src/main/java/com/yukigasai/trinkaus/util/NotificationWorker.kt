@@ -101,7 +101,11 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
 
         val builder = NotificationCompat.Builder(context, Constants.Notification.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(Constants.Notification.MESSAGE_TITLE).setContentText(
+            .setContentTitle(
+                context.getString(
+                R.string.hydration_notification_title
+                )
+            ).setContentText(
                 context.getString(
                     R.string.hydration_notification_text,
                     getVolumeStringWithUnit(hydrationLevel),

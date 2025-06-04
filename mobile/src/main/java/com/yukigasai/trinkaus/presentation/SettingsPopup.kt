@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RangeSlider
@@ -31,12 +33,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
+import com.yukigasai.trinkaus.util.NotificationWorker
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -157,7 +162,7 @@ fun SettingsPopup(
                     }
 
                     if (reminderEnabled.value) {
-                        Divider(
+                        HorizontalDivider(
                             modifier = Modifier.padding(vertical = 8.dp),
                             color = MaterialTheme.colorScheme.outlineVariant
                         )
@@ -189,7 +194,7 @@ fun SettingsPopup(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        Divider(
+                        HorizontalDivider(
                             modifier = Modifier.padding(vertical = 8.dp),
                             color = MaterialTheme.colorScheme.outlineVariant
                         )
@@ -234,6 +239,28 @@ fun SettingsPopup(
             ) {
                 Text(
                     text = stringResource(R.string.save),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+
+            TextButton(
+                onClick = {
+                    val workRequest =
+                        OneTimeWorkRequestBuilder<NotificationWorker>().build()
+                    WorkManager.getInstance(context).enqueue(workRequest)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 16.dp),
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                shape = MaterialTheme.shapes.medium,
+                contentPadding = PaddingValues(vertical = 12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.test_notification),
                     style = MaterialTheme.typography.labelLarge
                 )
             }
