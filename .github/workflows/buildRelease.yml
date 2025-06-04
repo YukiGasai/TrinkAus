@@ -23,10 +23,9 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
-      # --- Mobile App: APK ---
+      # --- Build & Sign Mobile APK ---
       - name: Build Mobile Release APK
         run: ./gradlew :mobile:assembleRelease
-
       - name: Sign Mobile APK
         id: sign_mobile_apk
         uses: r0adkll/sign-android-release@v1
@@ -39,10 +38,9 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      # --- Mobile App: AAB ---
+      # --- Build & Sign Mobile AAB ---
       - name: Build Mobile Release AAB
         run: ./gradlew :mobile:bundleRelease
-
       - name: Sign Mobile AAB
         id: sign_mobile_aab
         uses: r0adkll/sign-android-release@v1
@@ -55,10 +53,9 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      # --- Wear OS App: APK ---
+      # --- Build & Sign Wear APK ---
       - name: Build Wear OS Release APK
         run: ./gradlew :wear:assembleRelease
-
       - name: Sign Wear OS APK
         id: sign_wear_apk
         uses: r0adkll/sign-android-release@v1
@@ -71,10 +68,9 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      # --- Wear OS App: AAB ---
+      # --- Build & Sign Wear AAB ---
       - name: Build Wear OS Release AAB
         run: ./gradlew :wear:bundleRelease
-
       - name: Sign Wear OS AAB
         id: sign_wear_aab
         uses: r0adkll/sign-android-release@v1
@@ -87,7 +83,26 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      # --- Create GitHub Release (for APKs & AABs) ---
+      # --- Upload AABs to Google Play Store ---
+      - name: Upload Mobile AAB to Google Play
+        id: upload_mobile_play
+        uses: r0adkll/upload-google-play@v1.1.1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.yukigasai.trinkaus
+          releaseFiles: ${{ steps.sign_mobile_aab.outputs.signedReleaseFile }}
+          track: internal
+
+      - name: Upload Wear OS AAB to Google Play
+        id: upload_wear_play
+        uses: r0adkll/upload-google-play@v1.1.1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.yukigasai.trinkaus
+          releaseFiles: ${{ steps.sign_wear_aab.outputs.signedReleaseFile }}
+          track: "wear:internal"
+
+      # --- Create GitHub Release ---
       - name: Create GitHub Release
         id: create_gh_release
         uses: actions/create-release@v1
@@ -98,12 +113,19 @@ jobs:
           release_name: Release ${{ github.ref_name }}
           body: |
             Release of version ${{ github.ref_name }}.
-            Mobile and Wear APKs & AABs attached.
-            AABs also uploaded to Google Play.
+
+            **Google Play Store (Internal Track Links):**
+            *   Mobile App: ${{ steps.upload_mobile_play.outputs.downloadUrl || 'Play Store upload pending or link not available.' }}
+            *   Wear OS App: ${{ steps.upload_wear_play.outputs.downloadUrl || 'Play Store upload pending or link not available.' }}
+
+
+            DM me if you would like to join the internal testing track for the app.
+            
+            APKs and AABs are attached below for direct download or sideloading.
           draft: false
           prerelease: false
 
-      # --- Upload APKs to GitHub Release ---
+      # --- Upload Artifacts to the created GitHub Release ---
       - name: Upload Mobile APK to GitHub Release
         uses: actions/upload-release-asset@v1
         env:
@@ -124,7 +146,6 @@ jobs:
           asset_name: trinkaus-wear.apk
           asset_content_type: application/vnd.android.package-archive
 
-      # --- Upload AABs to GitHub Release ---
       - name: Upload Mobile AAB to GitHub Release
         uses: actions/upload-release-asset@v1
         env:
@@ -144,23 +165,6 @@ jobs:
           asset_path: ${{ steps.sign_wear_aab.outputs.signedReleaseFile }}
           asset_name: trinkaus-wear.aab
           asset_content_type: application/vnd.android.package-archive
-
-      # --- Upload AABs to Google Play Store ---
-      - name: Upload Mobile AAB to Google Play
-        uses: r0adkll/upload-google-play@v1.1.1
-        with:
-          releaseFiles: ${{ steps.sign_mobile_aab.outputs.signedReleaseFile }}
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: com.yukigasai.trinkaus
-          track: "internal"
-
-      - name: Upload Wear OS AAB to Google Play
-        uses: r0adkll/upload-google-play@v1.1.1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          releaseFiles: ${{ steps.sign_wear_aab.outputs.signedReleaseFile }}
-          packageName: com.yukigasai.trinkaus
-          track: "wear:internal"
 
       - name: Final Status Report
         run: echo "Build, sign, and deployment process completed with status=${{ job.status }}."

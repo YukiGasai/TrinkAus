@@ -12,24 +12,22 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.7"
-
+        versionCode = 9
+        versionName = "1.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
-    android {
-        buildFeatures {
-            compose = true
-        }
+    buildFeatures {
+        compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "2.1.0"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

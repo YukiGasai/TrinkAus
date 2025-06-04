@@ -12,14 +12,15 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1007
-        versionName = "1.7"
+        versionCode = 1009
+        versionName = "1.9"
 
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
