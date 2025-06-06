@@ -25,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
-import kotlin.div
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable

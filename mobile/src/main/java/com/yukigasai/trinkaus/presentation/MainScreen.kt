@@ -202,7 +202,7 @@ fun MainScreen(
                         HistoryMonthSelector(stateHolder)
 
                         if (useGraphHistory.value) {
-                            HistoricHydrationDisplay(stateHolder)
+                            HydrationGraph(stateHolder)
                         } else {
                             HydrationCalendar(stateHolder)
                         }

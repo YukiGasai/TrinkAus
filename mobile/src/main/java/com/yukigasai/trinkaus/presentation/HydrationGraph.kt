@@ -46,7 +46,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import kotlin.collections.get
 
 fun convertToGraphFormat(
     historyData: Map<LocalDate, Double>,
@@ -66,7 +65,7 @@ fun convertToGraphFormat(
     }
 
 @Composable
-fun HistoricHydrationDisplay(
+fun HydrationGraph(
     stateHolder: TrinkAusStateHolder,
     modifier: Modifier = Modifier,
 ) {

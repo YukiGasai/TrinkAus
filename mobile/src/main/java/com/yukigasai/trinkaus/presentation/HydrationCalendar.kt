@@ -1,6 +1,5 @@
 package com.yukigasai.trinkaus.presentation
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -27,7 +26,6 @@ fun HydrationCalendar(stateHolder: TrinkAusStateHolder) {
     val context = LocalContext.current
 
     var historyJob: Job? = null
-    val primaryColor = MaterialTheme.colorScheme.primary
 
     LaunchedEffect(selectedDate.value) {
         historyJob?.cancel()
