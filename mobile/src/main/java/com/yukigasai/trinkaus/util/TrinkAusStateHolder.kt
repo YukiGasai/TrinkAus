@@ -72,11 +72,6 @@ class TrinkAusStateHolder(
             preferences[DataStoreKeys.USE_GRAPH_HISTORY] == true
         }
 
-    val useAnimations: Flow<Boolean> =
-        dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.USE_ANIMATIONS] == true
-        }
-
     val smallAmount: Flow<Int> =
         dataStore.data.map { preferences ->
             val value = preferences[DataStoreKeys.SMALL_AMOUNT] ?: HydrationOption.SMALL.getDefaultAmount()

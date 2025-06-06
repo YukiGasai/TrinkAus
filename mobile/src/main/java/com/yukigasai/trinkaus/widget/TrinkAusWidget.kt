@@ -181,7 +181,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                                         .background(GlanceTheme.colors.secondaryContainer),
                             ) {}
 
-                            if (waterTargetHeight > 0.dp) {
+                            if (waterTargetHeight > 0.dp && currentLevel < goal) {
                                 Image(
                                     provider = ImageProvider(R.drawable.wave),
                                     contentDescription = "Water wave decoration",
