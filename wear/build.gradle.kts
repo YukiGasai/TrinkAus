@@ -12,9 +12,8 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1009
-        versionName = "1.9"
-
+        versionCode = 1010
+        versionName = "1.10"
     }
 
     buildTypes {
@@ -23,7 +22,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
