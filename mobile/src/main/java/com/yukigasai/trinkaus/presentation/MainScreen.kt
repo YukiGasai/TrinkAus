@@ -68,6 +68,7 @@ private suspend fun checkPermissions(
 fun MainScreen(
     stateHolder: TrinkAusStateHolder,
     healthConnectClient: HealthConnectClient,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -129,8 +130,9 @@ fun MainScreen(
 
     val spacing = 22.dp
 
-    Scaffold { padding ->
-
+    Scaffold(
+        modifier = modifier,
+    ) { padding ->
         when (permissionGranted.value) {
             null -> PermissionLoadingScreen(padding)
             false ->
@@ -258,9 +260,12 @@ fun MainScreen(
 }
 
 @Composable
-fun PermissionLoadingScreen(padding: PaddingValues) {
+fun PermissionLoadingScreen(
+    padding: PaddingValues,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier.fillMaxSize().padding(padding),
+        modifier = modifier.fillMaxSize().padding(padding),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -280,10 +285,11 @@ fun PermissionLoadingScreen(padding: PaddingValues) {
 @Composable
 fun RequestPermissionScreen(
     padding: PaddingValues,
+    modifier: Modifier = Modifier,
     getPermission: () -> Unit,
 ) {
     Box(
-        modifier = Modifier.fillMaxSize().padding(padding),
+        modifier = modifier.fillMaxSize().padding(padding),
         contentAlignment = Alignment.Center,
     ) {
         Column(

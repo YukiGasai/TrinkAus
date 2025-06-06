@@ -18,17 +18,20 @@ import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.getDisplayName
 
 @Composable
-fun AddHydrationButton(buttonList: List<HydrationOption>) {
+fun AddHydrationButton(
+    buttonList: List<HydrationOption>,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Absolute.SpaceBetween,
     ) {
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(12.dp))
         buttonList.forEach {
             Button(
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier.size(40.dp),
                 onClick = {
                     SendMessageThread(
                         context = context,
@@ -43,6 +46,6 @@ fun AddHydrationButton(buttonList: List<HydrationOption>) {
                 )
             }
         }
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(12.dp))
     }
 }

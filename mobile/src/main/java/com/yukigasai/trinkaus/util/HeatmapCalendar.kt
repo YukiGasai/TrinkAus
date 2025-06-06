@@ -52,6 +52,7 @@ fun HeatmapCalendar(
     data: Map<LocalDate, Double>,
     minValue: Double,
     maxValue: Double,
+    modifier: Modifier = Modifier,
     emptyCellColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
     startColor: Color = MaterialTheme.colorScheme.primaryContainer,
     endColor: Color = MaterialTheme.colorScheme.primary,
@@ -131,7 +132,7 @@ fun HeatmapCalendar(
         columns = GridCells.Fixed(7),
         userScrollEnabled = false,
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .height(gridHeight),
         // Used to allow padding in cells but keep the grid height consistent
@@ -213,7 +214,6 @@ fun HeatmapCalendar(
 
 @Composable
 private fun DayCell(
-    modifier: Modifier = Modifier,
     date: LocalDate,
     dayNumberText: String,
     value: Double?,
@@ -223,6 +223,7 @@ private fun DayCell(
     startColor: Color,
     endColor: Color,
     onDayClick: (date: LocalDate, value: Double?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val cellColor =
         when {

@@ -1,5 +1,6 @@
 package com.yukigasai.trinkaus.presentation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -14,7 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,12 +27,14 @@ import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import kotlin.div
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun CurrentHydrationDisplay(
     hydrationLevel: Double,
     hydrationGoal: Double,
+    modifier: Modifier = Modifier,
 ) {
-    val initialProgress = remember { mutableStateOf(0f) }
+    val initialProgress = remember { mutableFloatStateOf(0f) }
     val targetProgress = (hydrationLevel / hydrationGoal).coerceIn(0.0, 1.0).toFloat()
 
     val configuration = LocalConfiguration.current
@@ -39,7 +42,7 @@ fun CurrentHydrationDisplay(
 
     val animatedProgress =
         animateFloatAsState(
-            targetValue = initialProgress.value,
+            targetValue = initialProgress.floatValue,
             animationSpec =
                 tween(
                     durationMillis = 1000,
@@ -48,10 +51,10 @@ fun CurrentHydrationDisplay(
         )
 
     LaunchedEffect(targetProgress) {
-        initialProgress.value = targetProgress
+        initialProgress.floatValue = targetProgress
     }
     Card(
-        modifier = Modifier.size(circleSize),
+        modifier = modifier.size(circleSize),
         colors =
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface,

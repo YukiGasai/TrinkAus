@@ -25,12 +25,12 @@ import androidx.compose.ui.unit.sp
 import com.yukigasai.trinkaus.R
 
 @Composable
-fun RepositoryButton() {
+fun RepositoryButton(modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     Button(
         modifier =
-            Modifier.fillMaxWidth(),
+            modifier.fillMaxWidth(),
         onClick = {
             val intent =
                 Intent(

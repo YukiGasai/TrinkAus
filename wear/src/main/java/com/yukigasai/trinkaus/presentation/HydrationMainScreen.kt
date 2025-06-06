@@ -34,7 +34,10 @@ import kotlin.math.floor
 const val PROGRESS_BAR_GAP_SIZE = 28f
 
 @Composable
-fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
+fun HydrationMainScreen(
+    stateHolder: TrinkAusStateHolder,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
 
     val hydrationLevel = stateHolder.hydrationLevel.collectAsState(0.0)
@@ -89,7 +92,7 @@ fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
     MaterialTheme {
         Box(
             modifier =
-                Modifier
+                modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colors.background)
                     .onRotaryScrollEvent(handleRotaryEvent)

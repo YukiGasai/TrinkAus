@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -424,8 +425,12 @@ fun SettingsPopup(
 }
 
 @Composable
-fun OptionSection(content: @Composable () -> Unit) {
+fun OptionSection(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
     Card(
+        modifier = modifier,
         colors =
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -445,10 +450,10 @@ fun OptionSection(content: @Composable () -> Unit) {
 @Composable
 fun WaterIntakeItem(
     hydrationOption: HydrationOption,
-    modifier: Modifier = Modifier,
     initialAmount: Int,
     sheetState: SheetState,
     onAmountChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -465,7 +470,7 @@ fun WaterIntakeItem(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
-                imageVector = hydrationOption.getLucidIcon(),
+                painter = painterResource(hydrationOption.icon),
                 contentDescription = hydrationOption.getDisplayName(context),
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.primary,

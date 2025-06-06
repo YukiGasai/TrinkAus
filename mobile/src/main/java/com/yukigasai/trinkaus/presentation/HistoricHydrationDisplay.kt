@@ -66,7 +66,10 @@ fun convertToGraphFormat(
     }
 
 @Composable
-fun HistoricHydrationDisplay(stateHolder: TrinkAusStateHolder) {
+fun HistoricHydrationDisplay(
+    stateHolder: TrinkAusStateHolder,
+    modifier: Modifier = Modifier,
+) {
     val isLoadingHistory = remember { mutableStateOf(false) }
     val graphData = remember { mutableStateListOf<Bars>() }
     val selectedDate = remember { stateHolder.selectedDate }
@@ -102,7 +105,7 @@ fun HistoricHydrationDisplay(stateHolder: TrinkAusStateHolder) {
 
     if (isLoadingHistory.value) {
         Column(
-            modifier = Modifier.fillMaxWidth().height(300.dp),
+            modifier = modifier.fillMaxWidth().height(300.dp),
             horizontalAlignment = CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -118,7 +121,7 @@ fun HistoricHydrationDisplay(stateHolder: TrinkAusStateHolder) {
     } else {
         if (graphData.isNotEmpty()) {
             ColumnChart(
-                modifier = Modifier.fillMaxWidth().height(300.dp).padding(bottom = 10.dp),
+                modifier = modifier.fillMaxWidth().height(300.dp).padding(bottom = 10.dp),
                 maxValue = maxValue.doubleValue,
                 labelProperties =
                     LabelProperties(
@@ -176,7 +179,7 @@ fun HistoricHydrationDisplay(stateHolder: TrinkAusStateHolder) {
             )
         } else {
             Box(
-                modifier = Modifier.fillMaxWidth().height(300.dp).padding(bottom = 10.dp),
+                modifier = modifier.fillMaxWidth().height(300.dp).padding(bottom = 10.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

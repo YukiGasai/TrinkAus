@@ -37,7 +37,10 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryMonthSelector(stateHolder: TrinkAusStateHolder) {
+fun HistoryMonthSelector(
+    stateHolder: TrinkAusStateHolder,
+    modifier: Modifier = Modifier,
+) {
     val selectedDate = remember { stateHolder.selectedDate }
     val showDatePickerDialog = remember { mutableStateOf(false) }
     val datePickerState =
@@ -84,7 +87,7 @@ fun HistoryMonthSelector(stateHolder: TrinkAusStateHolder) {
 
     Card(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
         colors =

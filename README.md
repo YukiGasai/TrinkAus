@@ -73,6 +73,14 @@ Contributions are welcome! If you have ideas for new features, bug fixes, or imp
 
 Alternatively, you can open an issue to discuss your ideas or report bugs.
 
+The project is checked using ktlint.
+
+You can run the linter with the following command to check for code style issues:
+
+```bash
+./gradlew ktlintCheck
+```
+
 ## 📄 License
 
 This project is licensed under the [MIT License](./LICENSE) - see the LICENSE file for details.

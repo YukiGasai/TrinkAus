@@ -8,18 +8,13 @@ fun isMetric(): Boolean {
     return measureMentSystem == LocaleData.MeasurementSystem.SI
 }
 
-fun getUnit(): String {
-    return if (isMetric()) "L" else "fl oz"
-}
+fun getUnit(): String = if (isMetric()) "L" else "fl oz"
 
-fun getVolumeString(volume: Double): String {
-    return String
+fun getVolumeString(volume: Double): String =
+    String
         .format("%.3f", volume)
         .trimEnd('0')
         .trimEnd('.')
         .trimEnd(',')
-}
 
-fun getVolumeStringWithUnit(volume: Double): String {
-    return "${getVolumeString(volume)} ${getUnit()}"
-}
+fun getVolumeStringWithUnit(volume: Double): String = "${getVolumeString(volume)} ${getUnit()}"

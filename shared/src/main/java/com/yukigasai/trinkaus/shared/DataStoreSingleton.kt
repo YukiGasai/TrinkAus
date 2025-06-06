@@ -9,12 +9,12 @@ object DataStoreSingleton {
     private val Context.dataStoreInstance: DataStore<Preferences> by preferencesDataStore(name = Constants.DataStore.FILE_NAME)
 
     @Volatile
-    private var INSTANCE: DataStore<Preferences>? = null
+    private var staticInstance: DataStore<Preferences>? = null
 
     fun getInstance(context: Context): DataStore<Preferences> =
-        INSTANCE ?: synchronized(this) {
+        staticInstance ?: synchronized(this) {
             val instance = context.dataStoreInstance
-            INSTANCE = instance
+            staticInstance = instance
             instance
         }
 }

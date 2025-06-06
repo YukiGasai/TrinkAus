@@ -24,9 +24,9 @@ import java.time.format.FormatStyle
 
 @Composable
 fun StreakItem(
-    modifier: Modifier = Modifier,
     title: String,
     streak: StreakResult,
+    modifier: Modifier = Modifier,
 ) {
     val cardColor =
         if (streak.isLoading) {
@@ -82,9 +82,10 @@ fun StreakItem(
 fun StreakDisplay(
     largestStreak: StreakResult,
     currentStreak: StreakResult,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         Spacer(modifier = Modifier.weight(0.2f))

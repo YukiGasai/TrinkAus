@@ -28,10 +28,13 @@ import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun ButtonList(stateHolder: TrinkAusStateHolder) {
+fun ButtonList(
+    stateHolder: TrinkAusStateHolder,
+    modifier: GlanceModifier = GlanceModifier,
+) {
     val context = LocalContext.current
     Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(8.dp),
+        modifier = modifier.fillMaxWidth().padding(8.dp),
         horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {

@@ -71,7 +71,10 @@ class TrinkAusWidget : GlanceAppWidget() {
     }
 
     @Composable
-    fun GlanceContent(stateHolder: TrinkAusStateHolder) {
+    fun GlanceContent(
+        stateHolder: TrinkAusStateHolder,
+        modifier: GlanceModifier = GlanceModifier,
+    ) {
         val size = LocalSize.current
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
@@ -94,7 +97,7 @@ class TrinkAusWidget : GlanceAppWidget() {
         Box(
             contentAlignment = Alignment.BottomEnd,
             modifier =
-                GlanceModifier
+                modifier
                     .fillMaxSize()
                     .background(GlanceTheme.colors.widgetBackground)
                     .clickable {

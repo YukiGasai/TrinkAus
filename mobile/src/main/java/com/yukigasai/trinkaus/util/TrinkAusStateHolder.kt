@@ -125,7 +125,7 @@ class TrinkAusStateHolder(
                 initialValue = StreakResult(),
             )
 
-    private suspend fun _refreshDataFromSource() {
+    private suspend fun getHydrationData() {
         val hydration = HydrationHelper.readHydrationLevel(context)
         dataStore.edit { preferences ->
             preferences[DataStoreKeys.HYDRATION_LEVEL] = hydration
@@ -135,7 +135,7 @@ class TrinkAusStateHolder(
     fun refreshDataFromSource() {
         CoroutineScope(Dispatchers.IO).launch {
             isLoading.value = true
-            _refreshDataFromSource()
+            getHydrationData()
             isLoading.value = false
         }
     }
@@ -145,7 +145,7 @@ class TrinkAusStateHolder(
         CoroutineScope(Dispatchers.Main).launch {
             val amountToAdd = hydrationOption.getAmount(context)
             HydrationHelper.writeHydrationLevel(context, amountToAdd)
-            _refreshDataFromSource()
+            getHydrationData()
 
             val currentLevel = hydrationLevel.firstOrNull() ?: 0.0
 

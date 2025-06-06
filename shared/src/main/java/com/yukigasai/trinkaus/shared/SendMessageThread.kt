@@ -6,7 +6,9 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
 
 class SendMessageThread(
-    private val context: Context, private val path: String, private val msg: Any = ""
+    private val context: Context,
+    private val path: String,
+    private val msg: Any = "",
 ) : Thread() {
     override fun run() {
         println("Sending message: $path : $msg")

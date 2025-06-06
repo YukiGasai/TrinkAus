@@ -31,6 +31,7 @@ import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
 import kotlinx.coroutines.flow.first
+import com.yukigasai.trinkaus.shared.R as R2
 
 private const val RESOURCES_VERSION = "0"
 private const val GLASS_ICON = "glass_icon"
@@ -63,10 +64,10 @@ private fun resources(): ResourceBuilders.Resources =
         .setVersion(RESOURCES_VERSION)
         .addIdToImageMapping(
             GLASS_ICON,
-            drawableResToImageResource(R.drawable.glas_icon),
+            drawableResToImageResource(R2.drawable.glass_icon),
         ).addIdToImageMapping(
             BOTTLE_ICON,
-            drawableResToImageResource(R.drawable.bottle_icon),
+            drawableResToImageResource(R2.drawable.bottle_icon),
         ).build()
 
 private suspend fun tile(
