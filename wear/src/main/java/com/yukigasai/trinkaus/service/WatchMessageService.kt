@@ -4,8 +4,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.wear.tiles.TileService
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
-import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,12 +13,15 @@ import kotlinx.coroutines.launch
 class WatchMessageService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         println("Received message: ${messageEvent.path}")
+
+        val dataStore = DataStoreSingleton.getInstance(this)
+
         when (messageEvent.path) {
             Constants.Path.UPDATE_GOAL -> {
                 CoroutineScope(Dispatchers.IO).launch {
                     val goal = messageEvent.data.toString(Charsets.UTF_8).toDouble()
 
-                    this@WatchMessageService.dataStore.edit { preferences ->
+                    dataStore.edit { preferences ->
                         preferences[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] = goal
                     }
                     TileService
@@ -31,7 +34,7 @@ class WatchMessageService : WearableListenerService() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val hydration = messageEvent.data.toString(Charsets.UTF_8).toDouble()
 
-                    this@WatchMessageService.dataStore.edit { preferences ->
+                    dataStore.edit { preferences ->
                         preferences[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = hydration
                     }
                     TileService

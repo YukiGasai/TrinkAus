@@ -5,13 +5,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import androidx.datastore.preferences.core.edit
-import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
+import com.yukigasai.trinkaus.shared.DataStoreSingleton
+import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.SendMessageThread
-import com.yukigasai.trinkaus.shared.isMetric
+import com.yukigasai.trinkaus.shared.getAmount
 import com.yukigasai.trinkaus.util.HydrationHelper
-import com.yukigasai.trinkaus.util.HydrationOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,31 +24,26 @@ class NotificationActionReceiver : BroadcastReceiver() {
         val action = intent.action
         when (action) {
             Constants.IntentAction.ADD_SMALL -> {
-                updateIntake(context, 0)
+                updateIntake(context, HydrationOption.SMALL)
             }
 
             Constants.IntentAction.ADD_MEDIUM -> {
-                updateIntake(context, 1)
+                updateIntake(context, HydrationOption.MEDIUM)
             }
 
             Constants.IntentAction.ADD_LARGE -> {
-                updateIntake(context, 2)
+                updateIntake(context, HydrationOption.LARGE)
             }
         }
     }
 
     private fun updateIntake(
         context: Context,
-        hydrationOptionIndex: Int,
+        option: HydrationOption,
     ) {
-        val amount =
-            if (isMetric()) {
-                HydrationOption.all[hydrationOptionIndex].amountMetric
-            } else {
-                HydrationOption.all[hydrationOptionIndex].amountUS
-            }
-
         CoroutineScope(Dispatchers.Main).launch {
+            val amount = option.getAmount(context)
+
             HydrationHelper.writeHydrationLevel(context, amount)
             val newHydration = HydrationHelper.readHydrationLevel(context)
 
@@ -58,7 +53,8 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 newHydration,
             ).start()
 
-            context.dataStore.edit { preferences ->
+            val dataStore = DataStoreSingleton.getInstance(context)
+            dataStore.edit { preferences ->
                 preferences[DataStoreKeys.HYDRATION_LEVEL] = newHydration
             }
 

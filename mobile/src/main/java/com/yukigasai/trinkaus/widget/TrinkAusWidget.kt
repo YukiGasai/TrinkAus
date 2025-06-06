@@ -10,8 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -41,7 +39,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.MainActivity
-import com.yukigasai.trinkaus.presentation.dataStore
+import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
@@ -57,7 +55,7 @@ class TrinkAusWidget : GlanceAppWidget() {
         context: Context,
         id: GlanceId,
     ) {
-        val dataStore: DataStore<Preferences> = context.dataStore
+        val dataStore = DataStoreSingleton.getInstance(context)
         provideContent {
             val stateHolder = remember { TrinkAusStateHolder(context, dataStore) }
             GlanceTheme {
@@ -119,6 +117,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                         color = GlanceTheme.colors.primary,
                     )
                     Text(
+                        maxLines = 1,
                         text = string(R.string.loading),
                         style =
                             TextStyle(
@@ -155,6 +154,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                                 color = GlanceTheme.colors.primary,
                             )
                             Text(
+                                maxLines = 1,
                                 text = string(R.string.loading),
                                 style =
                                     TextStyle(
@@ -201,6 +201,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                 ) {
                     if (size.height > 110.dp && size.width > 90.dp) {
                         Text(
+                            maxLines = 1,
                             text = "Hydration",
                             style =
                                 TextStyle(
@@ -212,18 +213,36 @@ class TrinkAusWidget : GlanceAppWidget() {
                     }
                     Spacer(modifier = GlanceModifier.height(8.dp))
                     Text(
-                        text = "${getVolumeString(currentLevel)} / ${getVolumeStringWithUnit(goal)}",
+                        text =
+                            if (size.width > 90.dp) {
+                                "${getVolumeString(currentLevel)} / ${getVolumeStringWithUnit(goal)}"
+                            } else {
+                                getVolumeStringWithUnit(currentLevel)
+                            },
                         style =
                             TextStyle(
                                 fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                                 color = GlanceTheme.colors.onPrimaryContainer,
-                                fontWeight = FontWeight.Medium,
+                                fontWeight = FontWeight.Bold,
                             ),
                     )
+                    if (size.height > 110.dp && size.width < 90.dp) {
+                        Text(
+                            text = "/ ${getVolumeStringWithUnit(goal)}",
+                            style =
+                                TextStyle(
+                                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                                    color = GlanceTheme.colors.onPrimaryContainer,
+                                    fontWeight = FontWeight.Medium,
+                                ),
+                        )
+                    }
+
                     if (size.height > 110.dp) {
                         Spacer(modifier = GlanceModifier.height(8.dp))
                         if (currentLevel >= goal) {
                             Text(
+                                maxLines = 1,
                                 text = string(R.string.done),
                                 style =
                                     TextStyle(
@@ -234,6 +253,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                             )
                         } else {
                             Text(
+                                maxLines = 1,
                                 text = "${(progress * 100).toInt()}%",
                                 style =
                                     TextStyle(

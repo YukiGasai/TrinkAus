@@ -3,6 +3,7 @@ agp = "8.7.3"
 composeCharts = "0.1.7"
 connectClient = "1.1.0-alpha12"
 datastorePreferences = "1.1.7"
+iconsLucide = "1.0.0"
 konfettiCompose = "2.0.5"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
@@ -45,6 +46,7 @@ androidx-material3-android = { module = "androidx.compose.material3:material3-an
 androidx-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "runtime" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 compose-charts = { module = "io.github.ehsannarmani:compose-charts", version.ref = "composeCharts" }
+icons-lucide = { module = "com.composables:icons-lucide", version.ref = "iconsLucide" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

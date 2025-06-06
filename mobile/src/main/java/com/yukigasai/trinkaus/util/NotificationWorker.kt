@@ -15,13 +15,13 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.MainActivity
-import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.service.NotificationActionReceiver
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
-import com.yukigasai.trinkaus.shared.getVolumeString
+import com.yukigasai.trinkaus.shared.DataStoreSingleton
+import com.yukigasai.trinkaus.shared.HydrationOption
+import com.yukigasai.trinkaus.shared.getDisplayName
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
-import com.yukigasai.trinkaus.shared.isMetric
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -33,28 +33,33 @@ class NotificationWorker(
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result =
         withContext(Dispatchers.IO) {
+            val isTestNotification = inputData.getBoolean("isTestNotification", false)
+
             val context = applicationContext
-            val isReminderEnabled =
-                context.dataStore.data.first()[DataStoreKeys.IS_REMINDER_ENABLED] == true
+            val dataStore = DataStoreSingleton.getInstance(context)
+            if (!isTestNotification) {
+                val isReminderEnabled =
+                    dataStore.data.first()[DataStoreKeys.IS_REMINDER_ENABLED] == true
 
-            if (!isReminderEnabled) {
-                return@withContext Result.success()
+                if (!isReminderEnabled) {
+                    return@withContext Result.success()
+                }
+
+                val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                val startTime = dataStore.data.first()[DataStoreKeys.REMINDER_START_TIME] ?: 8f
+                val endTime = dataStore.data.first()[DataStoreKeys.REMINDER_END_TIME] ?: 23f
+
+                if (currentHour < startTime || currentHour >= endTime) {
+                    return@withContext Result.success()
+                }
             }
 
-            val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-            val startTime = context.dataStore.data.first()[DataStoreKeys.REMINDER_START_TIME] ?: 8f
-            val endTime = context.dataStore.data.first()[DataStoreKeys.REMINDER_END_TIME] ?: 23f
-
-            if (currentHour < startTime || currentHour >= endTime) {
-                return@withContext Result.success()
-            }
-
-            val hydrationGoal = context.dataStore.data.first()[DataStoreKeys.HYDRATION_GOAL] ?: 2.0
+            val hydrationGoal = dataStore.data.first()[DataStoreKeys.HYDRATION_GOAL] ?: 2.0
             val reminderDespiteGoal =
-                context.dataStore.data.first()[DataStoreKeys.REMINDER_DESPITE_GOAL] == true
+                dataStore.data.first()[DataStoreKeys.REMINDER_DESPITE_GOAL] == true
             val currentIntake = HydrationHelper.readHydrationLevel(context)
 
-            if (currentIntake >= hydrationGoal && !reminderDespiteGoal) {
+            if (currentIntake >= hydrationGoal && !reminderDespiteGoal && !isTestNotification) {
                 return@withContext Result.success()
             }
 
@@ -123,7 +128,7 @@ class NotificationWorker(
             Constants.IntentAction.ADD_MEDIUM,
             Constants.IntentAction.ADD_LARGE,
         ).forEachIndexed { index, action ->
-            val option = HydrationOption.all[index]
+            val option = HydrationOption.entries[index]
 
             val addIntent =
                 Intent(context, NotificationActionReceiver::class.java).apply {
@@ -137,11 +142,9 @@ class NotificationWorker(
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
 
-            val value = if (isMetric()) option.amountMetric else option.amountUS
-
             builder.addAction(
                 option.icon,
-                "+${getVolumeString(value)}",
+                option.getDisplayName(context),
                 addPendingIntent,
             )
         }

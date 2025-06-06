@@ -15,11 +15,9 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.lifecycleScope
 import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +28,6 @@ fun vibrateDevice(context: Context) {
     val vibrator = getSystemService(context, Vibrator::class.java)
     vibrator?.vibrate(VibrationEffect.createOneShot(100, 100))
 }
-
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.DataStore.FILE_NAME)
 
 class MainActivity : ComponentActivity() {
     override fun onResume() {
@@ -51,6 +47,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
+        val dataStore = DataStoreSingleton.getInstance(this)
         val stateHolder =
             TrinkAusStateHolder(
                 context = this,

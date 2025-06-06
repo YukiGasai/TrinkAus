@@ -13,15 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Icon
 import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.SendMessageThread
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
-import com.yukigasai.trinkaus.shared.isMetric
-
-data class HydrationOption(
-    val icon: Int,
-    val amountUS: Double,
-    val amountMetric: Double,
-)
+import com.yukigasai.trinkaus.shared.getDisplayName
 
 @Composable
 fun AddHydrationButton(buttonList: List<HydrationOption>) {
@@ -33,21 +27,19 @@ fun AddHydrationButton(buttonList: List<HydrationOption>) {
     ) {
         Spacer(modifier = Modifier.size(8.dp))
         buttonList.forEach {
-            val volume = if (isMetric()) it.amountMetric else it.amountUS
-            val description = "Add ${getVolumeStringWithUnit(volume)} of water"
             Button(
                 modifier = Modifier.size(42.dp),
                 onClick = {
                     SendMessageThread(
                         context = context,
                         path = Constants.Path.ADD_HYDRATION,
-                        msg = volume,
+                        msg = it,
                     ).start()
                 },
             ) {
                 Icon(
                     painter = painterResource(id = it.icon),
-                    contentDescription = description,
+                    contentDescription = it.getDisplayName(context),
                 )
             }
         }

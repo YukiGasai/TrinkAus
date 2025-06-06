@@ -24,4 +24,15 @@
     <string name="hydration_notification_title">Time to drink water</string>
     <string name="of_goal">of goal</string>
     <string name="cancel">Cancel</string>
+    <string name="hide_konfetti">Hide Konfetti</string>
+    <string name="longest_streak">Longest streak</string>
+    <string name="current_streak">Current streak</string>
+    <string name="streak_start_date">Begin: %1$s</string>
+    <string name="streak_end_date">End: %1$s</string>
+    <string name="use_graph_history">Use graph history</string>
+    <string name="use_animations">Use animations</string>
+    <string name="general">General</string>
+    <string name="water_settings">Water settings</string>
+    <string name="intake_amounts_setting">Adjust water intake amounts</string>
+    <string name="view_on_github">View on GitHub</string>
 </resources>

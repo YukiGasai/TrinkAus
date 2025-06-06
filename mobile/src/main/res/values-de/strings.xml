@@ -13,7 +13,7 @@
     <string name="enable_reminders">Erinnerungen</string>
     <string name="reminder_time_range">Erinnerungszeiten</string>
     <string name="save">Speichern</string>
-    <string name="reminder_despite_goal">Auch nach Ziel</string>
+    <string name="reminder_despite_goal">Erinnerungen auch nach Ziel</string>
     <string name="hydration_notification_text">Du heute hast schon %1$s  Wasser getrunken. Das sind %2$d%% deines Ziels. Bleib dran.</string>
     <string name="test_notification">Test Benachrichtigung</string>
     <string name="checking_permissions">Berechtigungen werden geprüft...</string>
@@ -25,4 +25,15 @@
     <string name="hydration_notification_title">Zeit für ein Wasser</string>
     <string name="of_goal">vom Ziel</string>
     <string name="cancel">Abbrechen</string>
+    <string name="hide_konfetti">Konfetti verstecken</string>
+    <string name="longest_streak">Längste Serie</string>
+    <string name="current_streak">Aktuelle Serie</string>
+    <string name="streak_start_date">Beginn: %1$s</string>
+    <string name="streak_end_date">Ende: %1$s</string>
+    <string name="use_graph_history">"Graph-Historie verwenden "</string>
+    <string name="use_animations">Animationen verwenden</string>
+    <string name="general">Generell</string>
+    <string name="water_settings">Wasser Einstellungen</string>
+    <string name="intake_amounts_setting">Wassermengen definieren</string>
+    <string name="view_on_github">Projekt bei GitHub</string>
 </resources>

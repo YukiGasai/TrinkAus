@@ -24,8 +24,8 @@ import com.google.android.horologist.tiles.images.drawableResToImageResource
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.MainActivity
 import com.yukigasai.trinkaus.presentation.PROGRESS_BAR_GAP_SIZE
-import com.yukigasai.trinkaus.presentation.dataStore
 import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
@@ -73,13 +73,14 @@ private suspend fun tile(
     requestParams: RequestBuilders.TileRequest,
     context: Context,
 ): TileBuilders.Tile {
-    var currentHydration = context.dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] ?: 0.0
-    var goalHydration = context.dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] ?: 3.0
+    val dataStore = DataStoreSingleton.getInstance(context)
+    var currentHydration = dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] ?: 0.0
+    var goalHydration = dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] ?: 3.0
 
     if (requestParams.currentState.lastClickableId == ADD_WATER_025) {
         val addedWater = if (isMetric()) 0.25 else 9.0
         currentHydration += addedWater
-        context.dataStore.edit { settings ->
+        dataStore.edit { settings ->
             settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
         }
         SendMessageThread(
@@ -90,7 +91,7 @@ private suspend fun tile(
     } else if (requestParams.currentState.lastClickableId == ADD_WATER_05) {
         val addedWater = if (isMetric()) 0.5 else 20.0
         currentHydration += addedWater
-        context.dataStore.edit { settings ->
+        dataStore.edit { settings ->
             settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
         }
         SendMessageThread(

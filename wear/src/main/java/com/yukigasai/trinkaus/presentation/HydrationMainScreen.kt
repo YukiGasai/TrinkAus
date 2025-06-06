@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
-import com.yukigasai.trinkaus.R
+import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.isMetric
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Job
@@ -86,13 +86,6 @@ fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
         true
     }
 
-    val HYDRATION_OPTIONS =
-        listOf<HydrationOption>(
-            HydrationOption(icon = R.drawable.glass_small_icon, amountUS = 5.0, amountMetric = 0.125),
-            HydrationOption(icon = R.drawable.glas_icon, amountUS = 9.0, amountMetric = 0.25),
-            HydrationOption(icon = R.drawable.bottle_icon, amountUS = 20.0, amountMetric = 0.5),
-        )
-
     MaterialTheme {
         Box(
             modifier =
@@ -115,7 +108,7 @@ fun HydrationMainScreen(stateHolder: TrinkAusStateHolder) {
             Column {
                 HydrationInfo(hydrationLevel.value, hydrationGoal.value)
                 Spacer(modifier = Modifier.size(16.dp))
-                AddHydrationButton(HYDRATION_OPTIONS)
+                AddHydrationButton(HydrationOption.entries)
             }
         }
     }

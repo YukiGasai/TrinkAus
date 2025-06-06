@@ -3,9 +3,9 @@ package com.yukigasai.trinkaus.shared
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 
 object Constants {
-
     object DataStore {
         const val FILE_NAME = "trinkaus_hydration_prefs"
 
@@ -16,6 +16,12 @@ object Constants {
             val REMINDER_DESPITE_GOAL = booleanPreferencesKey("reminder_despite_goal")
             val REMINDER_START_TIME = floatPreferencesKey("reminder_start_time")
             val REMINDER_END_TIME = floatPreferencesKey("reminder_end_time")
+            val HIDE_KONFETTI = booleanPreferencesKey("hide_konfetti")
+            val USE_GRAPH_HISTORY = booleanPreferencesKey("use_graph_history")
+            val USE_ANIMATIONS = booleanPreferencesKey("use_animations")
+            val SMALL_AMOUNT = intPreferencesKey("small_amount")
+            val MEDIUM_AMOUNT = intPreferencesKey("medium_amount")
+            val LARGE_AMOUNT = intPreferencesKey("large_amount")
         }
     }
 

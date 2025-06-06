@@ -1,69 +1,60 @@
 package com.yukigasai.trinkaus.presentation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
-import com.yukigasai.trinkaus.shared.isMetric
-import com.yukigasai.trinkaus.util.HydrationOption
+import com.composables.icons.lucide.GlassWater
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Martini
+import com.composables.icons.lucide.Milk
+import com.yukigasai.trinkaus.shared.HydrationOption
+import com.yukigasai.trinkaus.shared.getDisplayName
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddHydrationButtons(updateHydrationLevel: (newValue: Double) -> Unit) {
+fun AddHydrationButtons(updateHydrationLevel: (hydrationOption: HydrationOption) -> Unit) {
     val context = LocalContext.current
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        HydrationOption.all.forEach { option ->
-            val volume = if (isMetric()) option.amountMetric else option.amountUS
-            val description =
-                "${context.getString(R.string.add)} ${getVolumeStringWithUnit(volume)} ${
-                    context.getString(R.string.of_water)
-                }"
-            val tooltipState = rememberTooltipState()
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = {
-                    Text(
-                        modifier =
-                            Modifier
-                                .background(
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    shape = MaterialTheme.shapes.small,
-                                ).padding(8.dp),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        text = description,
-                    )
+        HydrationOption.entries.forEach { option ->
+            Button(
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.65f),
+                    ),
+                shape = MaterialTheme.shapes.small,
+                onClick = {
+                    updateHydrationLevel(option)
                 },
-                state = tooltipState,
             ) {
-                Button(onClick = {
-                    updateHydrationLevel(volume)
-                }) {
-                    Icon(
-                        painter = painterResource(id = option.icon),
-                        contentDescription = description,
-                    )
-                }
+                Icon(
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    imageVector = option.getLucidIcon(),
+                    contentDescription = option.getDisplayName(context),
+                )
             }
         }
     }
 }
+
+fun HydrationOption.getLucidIcon(): ImageVector =
+    when (this) {
+        HydrationOption.SMALL -> Lucide.Martini
+        HydrationOption.MEDIUM -> Lucide.GlassWater
+        HydrationOption.LARGE -> Lucide.Milk
+    }

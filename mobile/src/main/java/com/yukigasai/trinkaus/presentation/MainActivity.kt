@@ -2,7 +2,6 @@ package com.yukigasai.trinkaus.presentation
 
 import android.Manifest
 import android.app.ComponentCaller
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -16,18 +15,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.health.connect.client.HealthConnectClient
-import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.DataStore.FILE_NAME)
 
 class MainActivity : ComponentActivity() {
     private lateinit var stateHolder: TrinkAusStateHolder
@@ -120,7 +114,8 @@ class MainActivity : ComponentActivity() {
         getPermissionToPostNotifications()
 
         // Init a state holder to manage the hydration data
-        stateHolder = TrinkAusStateHolder(this, this.dataStore)
+        val dataStore = DataStoreSingleton.getInstance(this)
+        stateHolder = TrinkAusStateHolder(this, dataStore)
 
         setContent {
             AppTheme {

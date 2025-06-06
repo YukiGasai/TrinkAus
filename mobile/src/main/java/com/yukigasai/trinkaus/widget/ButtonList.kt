@@ -22,8 +22,8 @@ import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.unit.ColorProvider
 import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.shared.isMetric
-import com.yukigasai.trinkaus.util.HydrationOption
+import com.yukigasai.trinkaus.shared.HydrationOption
+import com.yukigasai.trinkaus.shared.getDisplayName
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 
 @SuppressLint("RestrictedApi")
@@ -35,9 +35,8 @@ fun ButtonList(stateHolder: TrinkAusStateHolder) {
         horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {
-        HydrationOption.all.forEachIndexed { index, option ->
+        HydrationOption.entries.forEachIndexed { index, option ->
 
-            val amount = if (isMetric()) option.amountMetric else option.amountUS
             val backgroundColor =
                 ColorProvider(
                     color =
@@ -53,12 +52,12 @@ fun ButtonList(stateHolder: TrinkAusStateHolder) {
                         .background(backgroundColor)
                         .size(48.dp)
                         .clickable {
-                            stateHolder.addHydration(amount)
+                            stateHolder.addHydration(option)
                         },
             ) {
                 Image(
                     provider = ImageProvider(option.icon),
-                    contentDescription = amount.toString(),
+                    contentDescription = option.getDisplayName(context),
                     colorFilter = ColorFilter.tint(GlanceTheme.colors.onPrimaryContainer),
                     modifier = GlanceModifier.fillMaxSize().padding(8.dp),
                 )
@@ -70,7 +69,7 @@ fun ButtonList(stateHolder: TrinkAusStateHolder) {
                 )
             }
 
-            if (index < HydrationOption.all.size - 1) {
+            if (index < HydrationOption.entries.size - 1) {
                 Spacer(modifier = GlanceModifier.width(8.dp))
             }
         }
