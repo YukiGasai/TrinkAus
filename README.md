@@ -4,6 +4,11 @@
   <img src="./docs/TitleImage.png" alt="TrinkAus App Title Image" width="600"/>
 </p>
 
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=fSCufa3N3ak"><strong>Watch the Demo on YouTube</strong></a>
+</p>
+
+
 **TrinkAus** is your minimalist companion for staying hydrated. This intuitive app reminds you to drink water every 2 hours and seamlessly integrates with **[Health Connect](https://developer.android.com/health-and-fitness/guides/health-connect)** to keep your hydration data in sync with your favorite health and fitness applications.
 
 Whether you're focused on your daily goals or need a gentle nudge, TrinkAus is designed to fit effortlessly into your lifestyle.
@@ -29,7 +34,7 @@ Whether you're focused on your daily goals or need a gentle nudge, TrinkAus is d
 
 You can grab the latest official builds from our **[GitHub Releases page](https://github.com/YukiGasai/TrinkAus/releases/latest)**.
 
-### Mobile App (Android Phone)
+### Mobile App
 
 1.  Download the `trinkaus-mobile.apk` file from the [latest release](https://github.com/YukiGasai/TrinkAus/releases/latest).
 2.  Enable installation from unknown sources on your Android device if you haven't already.
@@ -54,7 +59,7 @@ The Wear OS app is typically installed alongside the phone app if distributed vi
       adb install trinkaus-wear.apk
       ```
 
-## 🛠️ Building from Source (Optional)
+## 🛠️ Building from Source
 
 If you wish to build TrinkAus from the source code:
 
