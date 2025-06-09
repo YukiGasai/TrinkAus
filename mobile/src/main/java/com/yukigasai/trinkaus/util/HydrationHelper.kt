@@ -242,7 +242,7 @@ object HydrationHelper {
     ): StreakResult {
         val allHistoryMap = getAllHydrationHistory(context)
         if (allHistoryMap.isEmpty()) {
-            return StreakResult()
+            return StreakResult(0, null, isLoading = false)
         }
 
         // The map keys (LocalDate) are sorted because TreeMap is used.

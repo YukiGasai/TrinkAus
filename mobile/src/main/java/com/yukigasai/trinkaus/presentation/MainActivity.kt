@@ -15,7 +15,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.health.connect.client.HealthConnectClient
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
@@ -25,7 +24,6 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var stateHolder: TrinkAusStateHolder
-    private lateinit var healthConnectClient: HealthConnectClient
 
     /**
      * Request permission to post notifications on Android 13 and above.
@@ -92,23 +90,11 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Refresh the Health Connect data if the app reopens.
-     */
-    override fun onResume() {
-        super.onResume()
-        CoroutineScope(Dispatchers.IO).launch {
-            stateHolder.refreshDataFromSource()
-        }
-    }
-
-    /**
      * Set up the activity and the UI.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Get the Health Connect client
-        healthConnectClient = HealthConnectClient.Companion.getOrCreate(this)
 
         // Make sure the app has the notification permission
         getPermissionToPostNotifications()
@@ -123,7 +109,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.surface,
                 ) {
-                    MainScreen(stateHolder, healthConnectClient)
+                    MainScreen(stateHolder)
                 }
             }
         }
