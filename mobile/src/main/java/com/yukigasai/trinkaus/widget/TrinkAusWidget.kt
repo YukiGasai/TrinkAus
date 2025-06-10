@@ -3,6 +3,7 @@ package com.yukigasai.trinkaus.widget
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +23,7 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
@@ -37,8 +39,10 @@ import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.MainActivity
+import com.yukigasai.trinkaus.presentation.theme.WidgetTheme
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
@@ -47,6 +51,36 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
+
+fun getRandomWave(): ImageProvider {
+    val waves =
+        listOf(
+            R.drawable.wave1,
+            R.drawable.wave2,
+            R.drawable.wave3,
+            R.drawable.wave4,
+            R.drawable.wave5,
+            R.drawable.wave6,
+            R.drawable.wave7,
+            R.drawable.wave8,
+            R.drawable.wave9,
+        )
+    return ImageProvider(waves.random())
+}
+
+@Composable
+fun GlanceModifier.widgetBackground(color: ColorProvider): GlanceModifier =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        this
+            .background(color)
+            .cornerRadius(16.dp)
+    } else {
+        // Fallback path for older devices using a tinted drawable
+        this.background(
+            ImageProvider(R.drawable.rounded_background),
+            colorFilter = ColorFilter.tint(color),
+        )
+    }
 
 class TrinkAusWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
@@ -58,7 +92,7 @@ class TrinkAusWidget : GlanceAppWidget() {
         val dataStore = DataStoreSingleton.getInstance(context)
         provideContent {
             val stateHolder = remember { TrinkAusStateHolder(context, dataStore) }
-            GlanceTheme {
+            WidgetTheme {
                 GlanceContent(stateHolder)
             }
         }
@@ -99,7 +133,6 @@ class TrinkAusWidget : GlanceAppWidget() {
             modifier =
                 modifier
                     .fillMaxSize()
-                    .background(GlanceTheme.colors.widgetBackground)
                     .clickable {
                         PendingIntent
                             .getActivity(
@@ -136,7 +169,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                     modifier =
                         GlanceModifier
                             .fillMaxSize()
-                            .background(GlanceTheme.colors.widgetBackground)
+                            .widgetBackground(GlanceTheme.colors.widgetBackground)
                             .clickable {
                                 PendingIntent
                                     .getActivity(
@@ -168,22 +201,29 @@ class TrinkAusWidget : GlanceAppWidget() {
                             )
                         }
                     } else {
-                        Box(
-                            modifier =
+                        val boxModifier =
+                            if (currentLevel >= goal) {
+                                GlanceModifier.fillMaxSize()
+                            } else {
                                 GlanceModifier
                                     .fillMaxWidth()
-                                    .height(waterTargetHeight),
-                        ) {
-                            Box(
-                                modifier =
-                                    GlanceModifier
-                                        .fillMaxSize()
-                                        .background(GlanceTheme.colors.secondaryContainer),
-                            ) {}
+                                    .height(waterTargetHeight)
+                            }
 
-                            if (waterTargetHeight > 0.dp && currentLevel < goal) {
+                        Box(
+                            modifier = boxModifier,
+                        ) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S || waterTargetHeight > 16.dp) {
+                                Box(
+                                    modifier =
+                                        GlanceModifier
+                                            .fillMaxSize()
+                                            .widgetBackground(GlanceTheme.colors.secondaryContainer),
+                                ) {}
+                            }
+                            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.S || waterTargetHeight > 8.dp) && currentLevel < goal) {
                                 Image(
-                                    provider = ImageProvider(R.drawable.wave),
+                                    provider = getRandomWave(),
                                     contentDescription = "Water wave decoration",
                                     colorFilter = ColorFilter.tint(GlanceTheme.colors.widgetBackground),
                                     contentScale = ContentScale.FillBounds,
@@ -275,7 +315,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                     contentDescription = "Refresh",
                     colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
                     modifier =
-                        GlanceModifier.padding(4.dp).clickable {
+                        GlanceModifier.padding(8.dp).clickable {
                             scope.launch(Dispatchers.IO) {
                                 TrinkAusWidget().updateAll(context)
                             }

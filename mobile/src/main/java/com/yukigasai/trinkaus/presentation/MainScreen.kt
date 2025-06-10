@@ -191,14 +191,12 @@ fun InstallHealthConnectScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-//                text = stringResource(R.string.health_connect_install_required),
-                text = "health_connect_install_required",
+                text = stringResource(R.string.health_connect_install_required),
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
             )
             Text(
-//                text = stringResource(R.string.health_connect_install_description),
-                text = "health_connect_install_description",
+                text = stringResource(R.string.health_connect_install_description),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -218,8 +216,8 @@ fun InstallHealthConnectScreen(
                 shape = MaterialTheme.shapes.large,
             ) {
                 Text(
-//                    text = stringResource(R.string.install_or_update)
-                    text = "install_or_update",
+                    text = stringResource(R.string.install_or_update),
+                    textAlign = TextAlign.Center,
                 )
             }
         }

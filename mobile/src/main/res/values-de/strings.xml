@@ -43,4 +43,7 @@
     <string name="test_watch_connection">Verbindung zur Uhr testen</string>
     <string name="wear_api_error">Die Wear-API ist auf Ihrem Gerät nicht verfügbar. Bitte stellen Sie sicher, dass Ihre Uhr verbunden und die Begleit-App installiert ist.</string>
     <string name="wear_companion_error">Die TrinkAus WearOS-App ist nicht auf Ihrer Uhr installiert oder Ihre Uhr ist nicht verbunden.</string>
+    <string name="health_connect_install_required">Health Connect installieren</string>
+    <string name="health_connect_install_description">Sie müssen Health Connect auf Ihrem Handy installieren, damit der Wasserstand verfolgt werden kann. Die App kann aus dem PlayStore heruntergeladen werden.</string>
+    <string name="install_or_update">Installieren</string>
 </resources>

@@ -525,9 +525,9 @@ fun SettingsPopup(
                                 }
                             val packageId =
                                 if (!isWearApiAvailable) {
-                                    "com.yukigasai.trinkaus"
-                                } else {
                                     "com.google.android.wearable.app"
+                                } else {
+                                    "com.yukigasai.trinkaus"
                                 }
 
                             Text(

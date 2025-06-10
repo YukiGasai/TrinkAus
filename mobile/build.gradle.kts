@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId = "com.yukigasai.trinkaus"
-        minSdk = 30
+        minSdk = 28
         targetSdk = 35
-        versionCode = 11
-        versionName = "1.11"
+        versionCode = 12
+        versionName = "1.12"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
@@ -44,28 +44,43 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.play.services.wearable)
-    implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.connect.client)
+
+    // --- COMPOSE ---
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.runtime)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+
+    // --- GLANCE ---
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+
+    // --- WEAR OS & GOOGLE PLAY SERVICES ---
+    implementation(libs.play.services.wearable)
+
+    // --- 3RD PARTY LIBS ---
+    implementation(libs.konfetti.compose)
+    implementation(libs.compose.charts)
+    implementation(libs.icons.lucide)
+
+    // --- MODULES ---
+    implementation(project(":shared")) // Assuming you have a ":shared" module
+
+    // --- TESTING ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.glance.appwidget)
-    implementation(libs.androidx.connect.client)
-    implementation(libs.ui)
-    implementation(libs.androidx.material3.android)
-    implementation(libs.androidx.runtime)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.ui.graphics)
-    implementation(libs.ui.tooling.preview)
-    implementation(libs.konfetti.compose)
-    implementation(libs.play.services.wearable)
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.compose.charts)
-    implementation(project(":shared"))
-    implementation(libs.icons.lucide)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
 }

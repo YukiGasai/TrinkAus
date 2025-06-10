@@ -15,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.yukigasai.trinkaus.presentation.theme.TrinkAusTheme
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
@@ -104,7 +105,7 @@ class MainActivity : ComponentActivity() {
         stateHolder = TrinkAusStateHolder(this, dataStore)
 
         setContent {
-            AppTheme {
+            TrinkAusTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.surface,
