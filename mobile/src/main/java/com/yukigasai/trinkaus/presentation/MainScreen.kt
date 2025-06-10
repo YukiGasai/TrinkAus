@@ -46,8 +46,6 @@ import androidx.lifecycle.Lifecycle
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Settings
 import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.shared.Constants
-import com.yukigasai.trinkaus.shared.SendMessageThread
 import com.yukigasai.trinkaus.util.OnLifecycleEvent
 import com.yukigasai.trinkaus.util.StreakResult
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
@@ -234,7 +232,6 @@ fun MainUi(
     stateHolder: TrinkAusStateHolder,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     val hydrationLevel = stateHolder.hydrationLevel.collectAsState(0.0)
     val hydrationGoal = stateHolder.hydrationGoal.collectAsState(0.1)
     val largestStreak = stateHolder.largestStreak.collectAsState(StreakResult())
@@ -245,6 +242,8 @@ fun MainUi(
     val isLoading = remember { stateHolder.isLoading }
     val isHideKonfettiEnabled = stateHolder.isHideKonfettiEnabled.collectAsState(false)
     val spacing = 22.dp
+
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = modifier,
@@ -280,9 +279,10 @@ fun MainUi(
                 }
 
                 AddHydrationButtons {
-                    showConfetti.value = true
-                    stateHolder.addHydration(it)
-                    SendMessageThread(context, Constants.Path.UPDATE_HYDRATION, it).start()
+                    scope.launch {
+                        showConfetti.value = true
+                        stateHolder.addHydration(it)
+                    }
                 }
 
                 HorizontalDivider()

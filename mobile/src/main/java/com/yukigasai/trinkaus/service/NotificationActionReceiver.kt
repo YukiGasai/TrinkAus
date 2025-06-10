@@ -9,7 +9,7 @@ import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.HydrationOption
-import com.yukigasai.trinkaus.shared.SendMessageThread
+import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getAmount
 import com.yukigasai.trinkaus.util.HydrationHelper
 import kotlinx.coroutines.CoroutineScope
@@ -47,11 +47,11 @@ class NotificationActionReceiver : BroadcastReceiver() {
             HydrationHelper.writeHydrationLevel(context, amount)
             val newHydration = HydrationHelper.readHydrationLevel(context)
 
-            SendMessageThread(
+            WearableMessenger.sendMessage(
                 context,
                 Constants.Path.UPDATE_HYDRATION,
                 newHydration,
-            ).start()
+            )
 
             val dataStore = DataStoreSingleton.getInstance(context)
             dataStore.edit { preferences ->

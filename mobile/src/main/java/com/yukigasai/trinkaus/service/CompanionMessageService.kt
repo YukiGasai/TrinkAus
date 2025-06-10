@@ -9,7 +9,7 @@ import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.HydrationOption
-import com.yukigasai.trinkaus.shared.SendMessageThread
+import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getAmount
 import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.widget.TrinkAusWidget
@@ -34,11 +34,11 @@ class CompanionMessageService : WearableListenerService() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val hydrationLevel =
                         HydrationHelper.readHydrationLevel(this@CompanionMessageService)
-                    SendMessageThread(
+                    WearableMessenger.sendMessage(
                         this@CompanionMessageService,
                         Constants.Path.UPDATE_HYDRATION,
                         hydrationLevel.toString(),
-                    ).start()
+                    )
                 }
             }
 
@@ -70,11 +70,11 @@ class CompanionMessageService : WearableListenerService() {
                     val newHydration =
                         HydrationHelper.readHydrationLevel(this@CompanionMessageService)
 
-                    SendMessageThread(
+                    WearableMessenger.sendMessage(
                         this@CompanionMessageService,
                         Constants.Path.UPDATE_HYDRATION,
                         newHydration.toString(),
-                    ).start()
+                    )
 
                     TrinkAusWidget().updateAll(this@CompanionMessageService)
                 }

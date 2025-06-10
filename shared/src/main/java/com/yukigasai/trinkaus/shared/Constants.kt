@@ -37,6 +37,7 @@ object Constants {
         const val UPDATE_HYDRATION = "/update_hydration"
         const val ADD_HYDRATION = "/add_hydration"
         const val UPDATE_GOAL = "/update_goal"
+        const val TEST_NOTIFICATION = "/test_notification"
     }
 
     object IntentAction {

@@ -90,7 +90,6 @@ object HydrationHelper {
 
             return waterLevel
         } catch (e: Exception) {
-            // Handle other exceptions
             println("Error reading hydration level: ${e.message}")
             return 0.0
         }
@@ -252,7 +251,7 @@ object HydrationHelper {
         var currentStreakList = mutableListOf<HydrationHistoryEntry>()
 
         var currentDate = sortedDates.first()
-        val lastDateWithRecord = sortedDates.last() // Iterate up to the last day with any record
+        val lastDateWithRecord = sortedDates.last()
 
         // Iterate day by day from the first recorded day to the last recorded day
         while (!currentDate.isAfter(lastDateWithRecord)) {
@@ -265,9 +264,9 @@ object HydrationHelper {
                 // Goal not met, or no record for this day (intakeForDay is 0.0 from getOrDefault)
                 // Current streak is broken.
                 if (currentStreakList.size > longestStreakList.size) {
-                    longestStreakList = currentStreakList.toList() // Save if it was the longest
+                    longestStreakList = currentStreakList.toList()
                 }
-                currentStreakList.clear() // Reset current streak
+                currentStreakList.clear()
             }
             currentDate = currentDate.plusDays(1)
         }
@@ -293,7 +292,7 @@ object HydrationHelper {
         var currentStreakLength = 0
         var today = LocalDate.now(ZoneId.systemDefault())
         var checkDate = today
-        // Loop backwards
+
         while (checkDate.isAfter(LONG_AGO)) {
             val intakeForDay = allHistoryMap.getOrDefault(checkDate, 0.0)
             if (intakeForDay >= goal) {

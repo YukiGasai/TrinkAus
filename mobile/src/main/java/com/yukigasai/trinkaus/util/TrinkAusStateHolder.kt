@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.edit
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.HydrationOption
-import com.yukigasai.trinkaus.shared.SendMessageThread
+import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getAmount
 import com.yukigasai.trinkaus.shared.getDefaultAmount
 import kotlinx.coroutines.CoroutineScope
@@ -74,9 +74,7 @@ class TrinkAusStateHolder(
 
     val smallAmount: Flow<Int> =
         dataStore.data.map { preferences ->
-            val value = preferences[DataStoreKeys.SMALL_AMOUNT] ?: HydrationOption.SMALL.getDefaultAmount()
-            println("Small Amount Loaded: $value") // Debugging
-            value
+            preferences[DataStoreKeys.SMALL_AMOUNT] ?: HydrationOption.SMALL.getDefaultAmount()
         }
 
     val mediumAmount: Flow<Int> =
@@ -143,11 +141,11 @@ class TrinkAusStateHolder(
 
             val currentLevel = hydrationLevel.firstOrNull() ?: 0.0
 
-            SendMessageThread(
+            WearableMessenger.sendMessage(
                 context,
                 Constants.Path.UPDATE_HYDRATION,
                 currentLevel,
-            ).start()
+            )
             isLoading.value = false
         }
     }

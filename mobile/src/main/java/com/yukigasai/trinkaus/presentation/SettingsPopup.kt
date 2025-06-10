@@ -1,11 +1,18 @@
 package com.yukigasai.trinkaus.presentation
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,8 +38,13 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -56,7 +68,8 @@ import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.HydrationOption
-import com.yukigasai.trinkaus.shared.SendMessageThread
+import com.yukigasai.trinkaus.shared.SendMessageResult
+import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getDefaultAmount
 import com.yukigasai.trinkaus.shared.getDisplayName
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
@@ -82,6 +95,8 @@ fun SettingsPopup(
     val reminderEndTime = stateHolder.endTime.collectAsState(24f)
     val isHideKonfettiEnabled = stateHolder.isHideKonfettiEnabled.collectAsState(false)
     val useGraphHistory = stateHolder.useGraphHistory.collectAsState(false)
+    var showNoNodesDialog by remember { mutableStateOf(false) }
+    var isWearApiAvailable by remember { mutableStateOf(true) }
 
     val smallAmount =
         stateHolder.smallAmount.collectAsState(
@@ -100,6 +115,40 @@ fun SettingsPopup(
     val dataStore = DataStoreSingleton.getInstance(context)
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
+
+    LaunchedEffect(key1 = Unit) {
+        isWearApiAvailable = WearableMessenger.isWearableApiAvailable(context)
+    }
+
+    val WEAR_APP_PACKAGE_NAME = "com.yukigasai.trinkaus"
+    val WEAR_OS_PACKAGE_NAME = "com.google.android.wearable.app"
+
+    fun openPlayStoreForWearApp(
+        context: Context,
+        packageId: String,
+    ) {
+        try {
+            val intent =
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=$packageId"),
+                )
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            try {
+                val intent =
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=$packageId"),
+                    )
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } catch (e2: ActivityNotFoundException) {
+                Toast.makeText(context, "Could not open Play Store.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = { updateShowSettingsModal(false) },
@@ -155,11 +204,11 @@ fun SettingsPopup(
                     },
                     onValueChangeFinished = {
                         scope.launch(Dispatchers.IO) {
-                            SendMessageThread(
+                            WearableMessenger.sendMessage(
                                 context,
                                 Constants.Path.UPDATE_GOAL,
                                 hydrationGoal.value,
-                            ).start()
+                            )
                         }
                     },
                     valueRange = if (isMetric()) 1f..10f else 1f..200.0f,
@@ -416,6 +465,103 @@ fun SettingsPopup(
                     )
                 }
 
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            val result =
+                                WearableMessenger.sendMessage(
+                                    context = context,
+                                    path = Constants.Path.TEST_NOTIFICATION,
+                                    msg = "This is a test message from your phone!",
+                                )
+
+                            // Show feedback to the user based on the result
+                            when (result) {
+                                is SendMessageResult.Success -> {
+                                    Toast.makeText(context, "Test message sent successfully!", Toast.LENGTH_SHORT).show()
+                                }
+                                is SendMessageResult.NoNodesFound -> {
+                                    showNoNodesDialog = true
+                                }
+                                is SendMessageResult.ApiNotAvailable -> {
+                                    isWearApiAvailable = false
+                                }
+                                is SendMessageResult.Error -> {
+                                    Toast.makeText(context, "Failed to send message. Please try again.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 16.dp),
+                    // Add padding here
+                    colors =
+                        ButtonDefaults.textButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                    shape = MaterialTheme.shapes.medium,
+                    contentPadding = PaddingValues(vertical = 12.dp),
+                ) {
+                    Text(
+                        text = "Test Watch Connection",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+
+                if (!isWearApiAvailable || showNoNodesDialog) {
+                    Card(
+                        modifier = Modifier.padding(8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            val text =
+                                if (!isWearApiAvailable) {
+                                    "The Wear API is not available on your device. Please ensure your watch is connected and the companion app is installed"
+                                } else {
+                                    "The TrinkAus WearOS App is not installed on your watch. Please install it to sync data."
+                                }
+                            val packageId =
+                                if (!isWearApiAvailable) {
+                                    WEAR_OS_PACKAGE_NAME
+                                } else {
+                                    WEAR_APP_PACKAGE_NAME
+                                }
+
+                            Text(
+                                text = text,
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                            Spacer(
+                                modifier = Modifier.height(8.dp),
+                            )
+                            TextButton(
+                                onClick = {
+                                    openPlayStoreForWearApp(context, packageId)
+                                },
+                                colors =
+                                    ButtonDefaults.textButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    ),
+                            ) {
+                                Text(
+                                    text = "Open Play Store",
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
+                        }
+                    }
+                }
+
                 RepositoryButton()
             }
         }
@@ -457,7 +603,7 @@ fun WaterIntakeItem(
     val context = LocalContext.current
 
     Card(
-        modifier = modifier.width(120.dp), // Give it a fixed width for a neat layout
+        modifier = modifier.width(120.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(

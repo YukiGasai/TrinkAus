@@ -42,4 +42,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.play.services.wearable)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

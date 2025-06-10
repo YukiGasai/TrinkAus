@@ -161,7 +161,7 @@ fun HeatmapCalendar(
             val currentDate = yearMonth.atDay(day)
             val value = data[currentDate]
 
-            // Animation: Verzögerung basierend auf dem Index
+            // Animation by delaying the start using the index value
             val isVisible = remember { mutableStateOf(false) }
             val animatedAlpha =
                 animateFloatAsState(
@@ -169,7 +169,7 @@ fun HeatmapCalendar(
                     animationSpec =
                         tween(
                             durationMillis = 100,
-                            easing = androidx.compose.animation.core.FastOutSlowInEasing, // Bezier-Easing
+                            easing = androidx.compose.animation.core.FastOutSlowInEasing,
                         ),
                 )
             val animatedSize =
@@ -178,7 +178,7 @@ fun HeatmapCalendar(
                     animationSpec =
                         tween(
                             durationMillis = 400,
-                            easing = androidx.compose.animation.core.FastOutSlowInEasing, // Bezier-Easing
+                            easing = androidx.compose.animation.core.FastOutSlowInEasing,
                         ),
                 )
 

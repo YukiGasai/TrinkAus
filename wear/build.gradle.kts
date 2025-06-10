@@ -12,8 +12,8 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1010
-        versionName = "1.10"
+        versionCode = 1011
+        versionName = "1.11"
     }
 
     buildTypes {
