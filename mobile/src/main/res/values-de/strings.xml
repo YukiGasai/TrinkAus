@@ -36,4 +36,11 @@
     <string name="water_settings">Wasser Einstellungen</string>
     <string name="intake_amounts_setting">Wassermengen definieren</string>
     <string name="view_on_github">Projekt bei GitHub</string>
+    <string name="open_play_store_error">Play Store konnte nicht geöffnet werden.</string>
+    <string name="wear_os_test_message">Das ist eine Testnachricht von deinem Handy!</string>
+    <string name="wear_os_test_send_success">Testnachricht erfolgreich gesendet!</string>
+    <string name="wear_os_test_send_error">Testnachricht konnte nicht gesendet werden.</string>
+    <string name="test_watch_connection">Verbindung zur Uhr testen</string>
+    <string name="wear_api_error">Die Wear-API ist auf Ihrem Gerät nicht verfügbar. Bitte stellen Sie sicher, dass Ihre Uhr verbunden und die Begleit-App installiert ist.</string>
+    <string name="wear_companion_error">Die TrinkAus WearOS-App ist nicht auf Ihrer Uhr installiert oder Ihre Uhr ist nicht verbunden.</string>
 </resources>

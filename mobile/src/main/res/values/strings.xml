@@ -35,4 +35,11 @@
     <string name="water_settings">Water settings</string>
     <string name="intake_amounts_setting">Adjust water intake amounts</string>
     <string name="view_on_github">View on GitHub</string>
+    <string name="open_play_store_error">Could not open Play Store.</string>
+    <string name="wear_os_test_message">This is a test message from your phone!</string>
+    <string name="wear_os_test_send_success">Test message sent successfully!</string>
+    <string name="wear_os_test_send_error">Failed to send message. Please try again.</string>
+    <string name="test_watch_connection">Test Watch Connection</string>
+    <string name="wear_api_error">The Wear API is not available on your device. Please ensure your watch is connected and the companion app is installed.</string>
+    <string name="wear_companion_error">The TrinkAus WearOS App is not installed on your watch or your watch is not connected.</string>
 </resources>

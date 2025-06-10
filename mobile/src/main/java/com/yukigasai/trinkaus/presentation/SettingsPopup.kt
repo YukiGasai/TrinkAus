@@ -1,5 +1,6 @@
 package com.yukigasai.trinkaus.presentation
 
+import android.R.string
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -120,9 +121,6 @@ fun SettingsPopup(
         isWearApiAvailable = WearableMessenger.isWearableApiAvailable(context)
     }
 
-    val WEAR_APP_PACKAGE_NAME = "com.yukigasai.trinkaus"
-    val WEAR_OS_PACKAGE_NAME = "com.google.android.wearable.app"
-
     fun openPlayStoreForWearApp(
         context: Context,
         packageId: String,
@@ -145,7 +143,7 @@ fun SettingsPopup(
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
             } catch (e2: ActivityNotFoundException) {
-                Toast.makeText(context, "Could not open Play Store.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.open_play_store_error), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -472,13 +470,13 @@ fun SettingsPopup(
                                 WearableMessenger.sendMessage(
                                     context = context,
                                     path = Constants.Path.TEST_NOTIFICATION,
-                                    msg = "This is a test message from your phone!",
+                                    msg = context.getString(R.string.wear_os_test_message),
                                 )
 
                             // Show feedback to the user based on the result
                             when (result) {
                                 is SendMessageResult.Success -> {
-                                    Toast.makeText(context, "Test message sent successfully!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getText(R.string.wear_os_test_send_success), Toast.LENGTH_SHORT).show()
                                 }
                                 is SendMessageResult.NoNodesFound -> {
                                     showNoNodesDialog = true
@@ -487,7 +485,7 @@ fun SettingsPopup(
                                     isWearApiAvailable = false
                                 }
                                 is SendMessageResult.Error -> {
-                                    Toast.makeText(context, "Failed to send message. Please try again.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.wear_os_test_send_error), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
@@ -496,7 +494,6 @@ fun SettingsPopup(
                         Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp, bottom = 16.dp),
-                    // Add padding here
                     colors =
                         ButtonDefaults.textButtonColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -506,7 +503,7 @@ fun SettingsPopup(
                     contentPadding = PaddingValues(vertical = 12.dp),
                 ) {
                     Text(
-                        text = "Test Watch Connection",
+                        text = stringResource(R.string.test_watch_connection),
                         style = MaterialTheme.typography.labelLarge,
                     )
                 }
@@ -522,15 +519,15 @@ fun SettingsPopup(
                         ) {
                             val text =
                                 if (!isWearApiAvailable) {
-                                    "The Wear API is not available on your device. Please ensure your watch is connected and the companion app is installed"
+                                    stringResource(R.string.wear_api_error)
                                 } else {
-                                    "The TrinkAus WearOS App is not installed on your watch. Please install it to sync data."
+                                    stringResource(R.string.wear_companion_error)
                                 }
                             val packageId =
                                 if (!isWearApiAvailable) {
-                                    WEAR_OS_PACKAGE_NAME
+                                    "com.yukigasai.trinkaus"
                                 } else {
-                                    WEAR_APP_PACKAGE_NAME
+                                    "com.google.android.wearable.app"
                                 }
 
                             Text(
