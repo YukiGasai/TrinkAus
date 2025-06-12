@@ -1,8 +1,5 @@
-# gradle/libs.versions.toml
-
 [versions]
-# --- CORE & ANDROIDX ---
-agp = "8.7.3" # Note: AGP 8.3+ is recommended for latest Compose BOM
+agp = "8.7.3"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
@@ -14,17 +11,13 @@ datastorePreferences = "1.1.7"
 connectClient = "1.1.0-alpha12"
 kotlinxCoroutinesPlayServices = "1.9.0"
 
-# --- COMPOSE ---
-# The BOM controls all androidx.compose versions
 composeBom = "2025.06.00"
 material3Android = "1.3.2"
 
-# --- GLANCE (UPDATED) ---
 glance = "1.2.0-alpha01"
 
 # --- WEAR OS ---
 playServicesWearable = "19.0.0"
-wearCompose = "1.4.1" # Single version for wear.compose libraries
 wearToolingPreview = "1.0.0"
 tiles = "1.5.0"
 horologist = "0.6.17"
@@ -52,7 +45,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 androidx-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "connectClient" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 
-# --- COMPOSE (BOM MANAGED) ---
+# --- COMPOSE ---
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose" }
@@ -65,14 +58,12 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
-# --- GLANCE (BOM MANAGED) ---
+# --- GLANCE ---
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 # --- WEAR OS ---
 play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
-androidx-wear-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "wearCompose" }
-androidx-wear-compose-foundation = { group = "androidx.wear.compose", name = "compose-foundation", version.ref = "wearCompose" }
 androidx-wear-tooling-preview = { group = "androidx.wear", name = "wear-tooling-preview", version.ref = "wearToolingPreview" }
 androidx-tiles = { group = "androidx.wear.tiles", name = "tiles", version.ref = "tiles" }
 androidx-tiles-material = { group = "androidx.wear.tiles", name = "tiles-material", version.ref = "tiles" }

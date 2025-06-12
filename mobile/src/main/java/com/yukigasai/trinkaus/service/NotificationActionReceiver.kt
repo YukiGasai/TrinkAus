@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import androidx.datastore.preferences.core.edit
+import androidx.glance.appwidget.updateAll
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
@@ -12,6 +13,7 @@ import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getAmount
 import com.yukigasai.trinkaus.util.HydrationHelper
+import com.yukigasai.trinkaus.widget.TrinkAusWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,6 +59,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
             dataStore.edit { preferences ->
                 preferences[DataStoreKeys.HYDRATION_LEVEL] = newHydration
             }
+
+            // Update all the widgets manually as the flow might be dead
+            TrinkAusWidget().updateAll(context)
 
             // Hide the message
             with(NotificationManagerCompat.from(context)) {

@@ -9,7 +9,9 @@ import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
+import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -25,6 +27,8 @@ import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.getDisplayName
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
+import com.yukigasai.trinkaus.widget.actions.AddWaterActionCallback
+import com.yukigasai.trinkaus.widget.actions.HydrationOptionKey
 
 @SuppressLint("RestrictedApi")
 @Composable
@@ -54,9 +58,17 @@ fun ButtonList(
                     GlanceModifier
                         .background(backgroundColor)
                         .size(48.dp)
-                        .clickable {
-                            stateHolder.addHydration(option)
-                        },
+                        .clickable(
+                            actionRunCallback<AddWaterActionCallback>(
+                                parameters =
+                                    actionParametersOf(
+                                        HydrationOptionKey to option,
+                                    ),
+                            ),
+                        ),
+//                        .clickable {
+//                            stateHolder.addHydration(option)
+//                        },
             ) {
                 Image(
                     provider = ImageProvider(option.icon),

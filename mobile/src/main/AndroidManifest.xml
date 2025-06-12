@@ -77,6 +77,11 @@
         </receiver>
 
         <receiver
+            android:name=".service.MidnightUpdateReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
             android:name=".service.NotificationActionReceiver"
             android:exported="false">
             <intent-filter>

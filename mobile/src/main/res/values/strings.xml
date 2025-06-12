@@ -45,4 +45,6 @@
     <string name="health_connect_install_required">Health Connect has to be installed</string>
     <string name="health_connect_install_description">You need to install Health Connect on your phone to make sure we can track your hydration. The app can be downloaded from the PlayStore.</string>
     <string name="install_or_update">Install / Update</string>
+    <string name="minutes">Minutes</string>
+    <string name="reminder_interval">Reminder interval</string>
 </resources>

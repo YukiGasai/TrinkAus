@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
@@ -23,9 +22,9 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -47,8 +46,7 @@ import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.getVolumeString
 import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.yukigasai.trinkaus.widget.actions.RefreshActionCallback
 import kotlin.math.max
 import kotlin.math.min
 
@@ -111,7 +109,6 @@ class TrinkAusWidget : GlanceAppWidget() {
     ) {
         val size = LocalSize.current
         val context = LocalContext.current
-        val scope = rememberCoroutineScope()
         val hydrationLevel = stateHolder.hydrationLevel.collectAsState(initial = -1.0)
         val hydrationGoal = stateHolder.hydrationGoal.collectAsState(initial = 2.0)
 
@@ -122,10 +119,6 @@ class TrinkAusWidget : GlanceAppWidget() {
 
         LaunchedEffect(Unit) {
             stateHolder.refreshDataFromSource()
-        }
-
-        LaunchedEffect(size) {
-            println("${size.height}  ${size.width}")
         }
 
         Box(
@@ -145,7 +138,7 @@ class TrinkAusWidget : GlanceAppWidget() {
         ) {
             if (hydrationLevel.value < 0) {
                 Column(
-                    modifier = GlanceModifier.fillMaxSize(),
+                    modifier = GlanceModifier.fillMaxSize().widgetBackground(GlanceTheme.colors.widgetBackground),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -315,11 +308,14 @@ class TrinkAusWidget : GlanceAppWidget() {
                     contentDescription = "Refresh",
                     colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
                     modifier =
-                        GlanceModifier.padding(8.dp).clickable {
-                            scope.launch(Dispatchers.IO) {
-                                TrinkAusWidget().updateAll(context)
-                            }
-                        },
+                        GlanceModifier
+                            .padding(8.dp)
+                            .clickable(actionRunCallback<RefreshActionCallback>()),
+//                            .clickable {
+//                            scope.launch(Dispatchers.IO) {
+//                                TrinkAusWidget().updateAll(context)
+//                            }
+//                        },
                 )
             }
         }

@@ -29,6 +29,7 @@ class TrinkAusStateHolder(
     private val context: Context,
     private val dataStore: DataStore<Preferences>,
 ) {
+    val scope = CoroutineScope(Dispatchers.IO)
     val isLoading = mutableStateOf(false)
     val selectedDate = mutableStateOf(LocalDate.now())
 
@@ -62,6 +63,11 @@ class TrinkAusStateHolder(
             preferences[DataStoreKeys.REMINDER_END_TIME] ?: 0.0f
         }
 
+    val reminderInterval: Flow<Int> =
+        dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.REMINDER_INTERVAL] ?: 60
+        }
+
     val isHideKonfettiEnabled: Flow<Boolean> =
         dataStore.data.map { preferences ->
             preferences[DataStoreKeys.HIDE_KONFETTI] == true
@@ -72,20 +78,35 @@ class TrinkAusStateHolder(
             preferences[DataStoreKeys.USE_GRAPH_HISTORY] == true
         }
 
-    val smallAmount: Flow<Int> =
-        dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.SMALL_AMOUNT] ?: HydrationOption.SMALL.getDefaultAmount()
-        }
+    val smallAmount: StateFlow<Int?> =
+        dataStore.data
+            .map { prefs ->
+                prefs[DataStoreKeys.SMALL_AMOUNT] ?: HydrationOption.SMALL.getDefaultAmount()
+            }.stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = null,
+            )
 
-    val mediumAmount: Flow<Int> =
-        dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.MEDIUM_AMOUNT] ?: HydrationOption.MEDIUM.getDefaultAmount()
-        }
+    val mediumAmount: StateFlow<Int?> =
+        dataStore.data
+            .map { prefs ->
+                prefs[DataStoreKeys.MEDIUM_AMOUNT] ?: HydrationOption.MEDIUM.getDefaultAmount()
+            }.stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = null,
+            )
 
-    val largeAmount: Flow<Int> =
-        dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.LARGE_AMOUNT] ?: HydrationOption.LARGE.getDefaultAmount()
-        }
+    val largeAmount: StateFlow<Int?> =
+        dataStore.data
+            .map { prefs ->
+                prefs[DataStoreKeys.LARGE_AMOUNT] ?: HydrationOption.LARGE.getDefaultAmount()
+            }.stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = null,
+            )
 
     @OptIn(FlowPreview::class)
     val largestStreak: StateFlow<StreakResult> =

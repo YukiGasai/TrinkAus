@@ -46,4 +46,6 @@
     <string name="health_connect_install_required">Health Connect installieren</string>
     <string name="health_connect_install_description">Sie müssen Health Connect auf Ihrem Handy installieren, damit der Wasserstand verfolgt werden kann. Die App kann aus dem PlayStore heruntergeladen werden.</string>
     <string name="install_or_update">Installieren</string>
+    <string name="minutes">Minuten</string>
+    <string name="reminder_interval">Erinnerungsintervall</string>
 </resources>

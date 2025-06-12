@@ -65,6 +65,8 @@ class NotificationWorker(
 
             val percentage = ((currentIntake / hydrationGoal) * 100).toInt()
 
+            ReminderScheduler.startOrRescheduleReminders(context)
+
             showNotification(context, currentIntake, percentage)
             return@withContext Result.success()
         }

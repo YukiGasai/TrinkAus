@@ -1,6 +1,5 @@
 package com.yukigasai.trinkaus.presentation
 
-import android.R.string
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -24,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -77,6 +77,7 @@ import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import com.yukigasai.trinkaus.shared.isMetric
 import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.util.NotificationWorker
+import com.yukigasai.trinkaus.util.ReminderScheduler
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -94,23 +95,18 @@ fun SettingsPopup(
     val reminderDespiteGoal = stateHolder.reminderDespiteGoal.collectAsState(false)
     val reminderStartTime = stateHolder.startTime.collectAsState(0f)
     val reminderEndTime = stateHolder.endTime.collectAsState(24f)
+    val reminderInterval = stateHolder.reminderInterval.collectAsState(60)
     val isHideKonfettiEnabled = stateHolder.isHideKonfettiEnabled.collectAsState(false)
     val useGraphHistory = stateHolder.useGraphHistory.collectAsState(false)
     var showNoNodesDialog by remember { mutableStateOf(false) }
     var isWearApiAvailable by remember { mutableStateOf(true) }
 
     val smallAmount =
-        stateHolder.smallAmount.collectAsState(
-            HydrationOption.SMALL.getDefaultAmount(),
-        )
+        stateHolder.smallAmount.collectAsState(null)
     val mediumAmount =
-        stateHolder.mediumAmount.collectAsState(
-            HydrationOption.MEDIUM.getDefaultAmount(),
-        )
+        stateHolder.mediumAmount.collectAsState(null)
     val largeAmount =
-        stateHolder.largeAmount.collectAsState(
-            HydrationOption.LARGE.getDefaultAmount(),
-        )
+        stateHolder.largeAmount.collectAsState(null)
 
     val context = LocalContext.current
     val dataStore = DataStoreSingleton.getInstance(context)
@@ -186,6 +182,11 @@ fun SettingsPopup(
 
                 Slider(
                     value = hydrationGoal.value.toFloat(),
+                    onValueChangeFinished = {
+                        scope.launch(Dispatchers.IO) {
+                            ReminderScheduler.startOrRescheduleReminders(context)
+                        }
+                    },
                     onValueChange = {
                         scope.launch(Dispatchers.IO) {
                             dataStore.edit { preferences ->
@@ -198,15 +199,6 @@ fun SettingsPopup(
                                             .toDouble()
                                     }
                             }
-                        }
-                    },
-                    onValueChangeFinished = {
-                        scope.launch(Dispatchers.IO) {
-                            WearableMessenger.sendMessage(
-                                context,
-                                Constants.Path.UPDATE_GOAL,
-                                hydrationGoal.value,
-                            )
                         }
                     },
                     valueRange = if (isMetric()) 1f..10f else 1f..200.0f,
@@ -224,49 +216,63 @@ fun SettingsPopup(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = spacedBy(16.dp),
                 ) {
-                    WaterIntakeItem(
-                        hydrationOption = HydrationOption.SMALL,
-                        modifier = Modifier.weight(1f),
-                        initialAmount = smallAmount.value,
-                        sheetState = sheetState,
-                        onAmountChange = {
-                            scope.launch(Dispatchers.IO) {
-                                dataStore.edit { preferences ->
-                                    preferences[DataStoreKeys.SMALL_AMOUNT] =
-                                        it.toIntOrNull() ?: HydrationOption.SMALL.getDefaultAmount()
+                    if (smallAmount.value == null) {
+                        CircularProgressIndicator()
+                    } else {
+                        WaterIntakeItem(
+                            hydrationOption = HydrationOption.SMALL,
+                            modifier = Modifier.weight(1f),
+                            initialAmount = smallAmount.value!!,
+                            sheetState = sheetState,
+                            onAmountChange = {
+                                scope.launch(Dispatchers.IO) {
+                                    dataStore.edit { preferences ->
+                                        preferences[DataStoreKeys.SMALL_AMOUNT] =
+                                            it.toIntOrNull()
+                                                ?: HydrationOption.SMALL.getDefaultAmount()
+                                    }
                                 }
-                            }
-                        },
-                    )
-                    WaterIntakeItem(
-                        hydrationOption = HydrationOption.MEDIUM,
-                        modifier = Modifier.weight(1f),
-                        initialAmount = mediumAmount.value,
-                        sheetState = sheetState,
-                        onAmountChange = {
-                            scope.launch(Dispatchers.IO) {
-                                dataStore.edit { preferences ->
-                                    preferences[DataStoreKeys.MEDIUM_AMOUNT] =
-                                        it.toIntOrNull()
-                                            ?: HydrationOption.MEDIUM.getDefaultAmount()
+                            },
+                        )
+                    }
+                    if (mediumAmount.value == null) {
+                        CircularProgressIndicator()
+                    } else {
+                        WaterIntakeItem(
+                            hydrationOption = HydrationOption.MEDIUM,
+                            modifier = Modifier.weight(1f),
+                            initialAmount = mediumAmount.value!!,
+                            sheetState = sheetState,
+                            onAmountChange = {
+                                scope.launch(Dispatchers.IO) {
+                                    dataStore.edit { preferences ->
+                                        preferences[DataStoreKeys.MEDIUM_AMOUNT] =
+                                            it.toIntOrNull()
+                                                ?: HydrationOption.MEDIUM.getDefaultAmount()
+                                    }
                                 }
-                            }
-                        },
-                    )
-                    WaterIntakeItem(
-                        hydrationOption = HydrationOption.LARGE,
-                        modifier = Modifier.weight(1f),
-                        initialAmount = largeAmount.value,
-                        sheetState = sheetState,
-                        onAmountChange = {
-                            scope.launch(Dispatchers.IO) {
-                                dataStore.edit { preferences ->
-                                    preferences[DataStoreKeys.LARGE_AMOUNT] =
-                                        it.toIntOrNull() ?: HydrationOption.LARGE.getDefaultAmount()
+                            },
+                        )
+                    }
+                    if (largeAmount.value == null) {
+                        CircularProgressIndicator()
+                    } else {
+                        WaterIntakeItem(
+                            hydrationOption = HydrationOption.LARGE,
+                            modifier = Modifier.weight(1f),
+                            initialAmount = largeAmount.value!!,
+                            sheetState = sheetState,
+                            onAmountChange = {
+                                scope.launch(Dispatchers.IO) {
+                                    dataStore.edit { preferences ->
+                                        preferences[DataStoreKeys.LARGE_AMOUNT] =
+                                            it.toIntOrNull()
+                                                ?: HydrationOption.LARGE.getDefaultAmount()
+                                    }
                                 }
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                 }
             }
 
@@ -288,6 +294,11 @@ fun SettingsPopup(
                             scope.launch(Dispatchers.IO) {
                                 dataStore.edit { preferences ->
                                     preferences[DataStoreKeys.IS_REMINDER_ENABLED] = isChecked
+                                }
+                                if (isChecked) {
+                                    ReminderScheduler.startOrRescheduleReminders(context)
+                                } else {
+                                    ReminderScheduler.stopReminders(context)
                                 }
                             }
                         },
@@ -331,6 +342,38 @@ fun SettingsPopup(
                     },
                     valueRange = 0f..24f,
                     steps = 23,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Text(
+                    text = stringResource(R.string.reminder_interval),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+
+                Text(
+                    text = "${reminderInterval.value} ${stringResource(R.string.minutes)}",
+                    style = MaterialTheme.typography.displaySmall,
+                    color =
+                        if (reminderEnabled.value) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                        },
+                )
+
+                Slider(
+                    enabled = reminderEnabled.value,
+                    value = reminderInterval.value.toFloat(),
+                    onValueChange = { values ->
+                        scope.launch(Dispatchers.IO) {
+                            dataStore.edit { preferences ->
+                                preferences[DataStoreKeys.REMINDER_INTERVAL] = values.toInt()
+                            }
+                        }
+                    },
+                    valueRange = 15f..720f,
+                    steps = 705,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
@@ -599,6 +642,14 @@ fun WaterIntakeItem(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    var editedAmount by remember(initialAmount) { mutableStateOf(initialAmount.toString()) }
+    var isFocused by remember { mutableStateOf(false) }
+    LaunchedEffect(initialAmount) {
+        if (!isFocused) {
+            editedAmount = initialAmount.toString()
+        }
+    }
+
     Card(
         modifier = modifier.width(120.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -618,18 +669,23 @@ fun WaterIntakeItem(
             )
             TextField(
                 modifier =
-                    Modifier.onFocusChanged {
-                        if (it.hasFocus) {
+                    Modifier.onFocusChanged { focusState ->
+                        isFocused = focusState.isFocused
+
+                        if (isFocused) {
                             scope.launch(Dispatchers.Main) {
-                                // Stupid way to prevent keyboard from hiding bottom sheet
                                 delay(700)
                                 sheetState.expand()
                             }
+                        } else {
+                            onAmountChange(editedAmount)
                         }
                     },
-                value = initialAmount.toString(),
+                value = editedAmount,
                 onValueChange = { newValue ->
-                    onAmountChange(newValue.trim())
+                    if (newValue.all { it.isDigit() }) {
+                        editedAmount = newValue
+                    }
                 },
                 textStyle =
                     TextStyle(

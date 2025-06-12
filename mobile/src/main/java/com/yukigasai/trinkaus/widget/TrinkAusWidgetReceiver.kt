@@ -9,6 +9,8 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.compose
 import androidx.glance.appwidget.updateAll
+import com.yukigasai.trinkaus.util.cancelMidnightUpdate
+import com.yukigasai.trinkaus.util.scheduleMidnightUpdate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,6 +21,16 @@ import kotlinx.coroutines.launch
  */
 class TrinkAusWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TrinkAusWidget()
+
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        scheduleMidnightUpdate(context)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        cancelMidnightUpdate(context)
+    }
 
     override fun onUpdate(
         context: Context,
