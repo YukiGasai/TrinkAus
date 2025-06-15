@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -34,8 +33,8 @@ import com.yukigasai.trinkaus.presentation.CurrentHydrationDisplay
 import com.yukigasai.trinkaus.presentation.HistoryMonthSelector
 import com.yukigasai.trinkaus.presentation.HydrationCalendar
 import com.yukigasai.trinkaus.presentation.HydrationGraph
-import com.yukigasai.trinkaus.presentation.SettingsPopup
 import com.yukigasai.trinkaus.presentation.StreakDisplay
+import com.yukigasai.trinkaus.presentation.settings.SettingsPopup
 import com.yukigasai.trinkaus.util.StreakResult
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.launch
@@ -45,7 +44,7 @@ import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainUI(
     stateHolder: TrinkAusStateHolder,

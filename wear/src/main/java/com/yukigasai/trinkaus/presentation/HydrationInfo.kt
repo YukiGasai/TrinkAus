@@ -9,8 +9,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import com.yukigasai.trinkaus.shared.getVolumeString
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
+import com.yukigasai.trinkaus.shared.UnitHelper
 
 @Composable
 fun HydrationInfo(
@@ -22,7 +21,7 @@ fun HydrationInfo(
         modifier = modifier,
     ) {
         Text(
-            text = getVolumeString(hydrationLevel),
+            text = UnitHelper.getVolumeString(hydrationLevel),
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
             style =
@@ -32,7 +31,7 @@ fun HydrationInfo(
                 ),
         )
         Text(
-            text = "/ ${getVolumeStringWithUnit(goalHydration)}",
+            text = "/ ${UnitHelper.getVolumeStringWithUnit(goalHydration)}",
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
             style =

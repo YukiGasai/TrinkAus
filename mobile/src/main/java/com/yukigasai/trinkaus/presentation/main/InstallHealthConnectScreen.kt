@@ -1,7 +1,6 @@
 package com.yukigasai.trinkaus.presentation.main
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.yukigasai.trinkaus.R
 
 @Composable
@@ -51,7 +51,7 @@ fun InstallHealthConnectScreen(
                     context.startActivity(
                         Intent(Intent.ACTION_VIEW).apply {
                             setPackage("com.android.vending")
-                            data = Uri.parse(uriString)
+                            data = uriString.toUri()
                             putExtra("overlay", true)
                             putExtra("callerId", context.packageName)
                         },

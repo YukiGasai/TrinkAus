@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
+import com.yukigasai.trinkaus.shared.UnitHelper
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -118,7 +118,7 @@ fun HeatmapCalendar(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = data[date]?.let { getVolumeStringWithUnit(it) } ?: "No data",
+                        text = data[date]?.let { UnitHelper.getVolumeStringWithUnit(it) } ?: "No data",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )

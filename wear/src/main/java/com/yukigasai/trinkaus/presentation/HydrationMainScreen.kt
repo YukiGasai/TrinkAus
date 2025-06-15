@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -21,10 +23,12 @@ import androidx.compose.ui.input.rotary.RotaryScrollEvent
 import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import com.yukigasai.trinkaus.shared.HydrationOption
-import com.yukigasai.trinkaus.shared.isMetric
+import com.yukigasai.trinkaus.shared.UnitHelper
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,6 +37,7 @@ import kotlin.math.floor
 
 const val PROGRESS_BAR_GAP_SIZE = 28f
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HydrationMainScreen(
     stateHolder: TrinkAusStateHolder,
@@ -50,9 +55,19 @@ fun HydrationMainScreen(
     val startAngle = 90 + PROGRESS_BAR_GAP_SIZE
     val endAngle = startAngle + 360 - PROGRESS_BAR_GAP_SIZE * 2
 
+    val isLoading = remember { mutableStateOf(false) }
+    val listState = rememberScalingLazyListState()
+
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         stateHolder.refreshDataFromSource()
+    }
+
+    LaunchedEffect(isLoading.value) {
+        if (isLoading.value) {
+            delay(1000)
+            isLoading.value = false
+        }
     }
 
     LaunchedEffect(hydrationGoal.value) {
@@ -69,7 +84,7 @@ fun HydrationMainScreen(
             tmpGoal.doubleValue = hydrationGoal.value
         }
 
-        if (isMetric()) {
+        if (UnitHelper.isMetric()) {
             tmpGoal.doubleValue = tmpGoal.doubleValue + (event.verticalScrollPixels / 100)
             val oldGoal = hydrationGoal.value
             val newValue = (floor(tmpGoal.doubleValue * 10) / 10).coerceIn(1.0, 10.0)
@@ -90,28 +105,47 @@ fun HydrationMainScreen(
     }
 
     MaterialTheme {
-        Box(
-            modifier =
-                modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colors.background)
-                    .onRotaryScrollEvent(handleRotaryEvent)
-                    .focusRequester(focusRequester)
-                    .focusable(),
-            contentAlignment = Alignment.Center,
+        PullToRefreshBox(
+            isRefreshing = isLoading.value,
+            onRefresh = {
+                isLoading.value = true
+                stateHolder.refreshDataFromSource()
+            },
+            modifier = modifier.fillMaxSize(),
         ) {
-            CircularProgressIndicator(
-                progress = (hydrationLevel.value / hydrationGoal.value).toFloat(),
-                strokeWidth = 8.dp,
-                trackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.2f),
-                startAngle = startAngle,
-                endAngle = endAngle,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Column {
-                HydrationInfo(hydrationLevel.value, hydrationGoal.value)
-                Spacer(modifier = Modifier.size(16.dp))
-                AddHydrationButton(HydrationOption.entries)
+            ScalingLazyColumn(
+                state = listState,
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .onRotaryScrollEvent {
+                            true
+                        }.focusRequester(focusRequester)
+                        .focusable(),
+            ) {
+                item {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillParentMaxSize()
+                                .background(MaterialTheme.colors.background),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            progress = (hydrationLevel.value / hydrationGoal.value).toFloat(),
+                            strokeWidth = 8.dp,
+                            trackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.2f),
+                            startAngle = startAngle,
+                            endAngle = endAngle,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            HydrationInfo(hydrationLevel.value, hydrationGoal.value)
+                            Spacer(modifier = Modifier.size(16.dp))
+                            AddHydrationButton(HydrationOption.entries)
+                        }
+                    }
+                }
             }
         }
     }

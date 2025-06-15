@@ -9,11 +9,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.yukigasai.trinkaus.R
@@ -23,8 +23,8 @@ import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.HydrationOption
+import com.yukigasai.trinkaus.shared.UnitHelper
 import com.yukigasai.trinkaus.shared.getDisplayName
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -133,7 +133,7 @@ class NotificationWorker(
                 ).setContentText(
                     context.getString(
                         R.string.hydration_notification_text,
-                        getVolumeStringWithUnit(hydrationLevel),
+                        UnitHelper.getVolumeStringWithUnit(hydrationLevel),
                         percentage,
                     ),
                 ).setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -195,7 +195,7 @@ fun createOrUpdateNotificationChannel(context: Context) {
             description = Constants.Notification.CHANNEL_DESCRIPTION
         }
 
-    val soundUri = Uri.parse("android.resource://${context.packageName}/raw/notification_sound")
+    val soundUri = "android.resource://${context.packageName}/raw/notification_sound".toUri()
 
     soundChannel.setSound(soundUri, AUDIO_ATTRIBUTES_DEFAULT)
     notificationManager.createNotificationChannel(soundChannel)

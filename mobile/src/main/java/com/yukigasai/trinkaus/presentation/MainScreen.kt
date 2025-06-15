@@ -2,7 +2,6 @@ package com.yukigasai.trinkaus.presentation
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.HealthConnectClient
@@ -28,11 +26,11 @@ import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.launch
 
 sealed class HealthConnectState {
-    object Loading : HealthConnectState()
+    data object Loading : HealthConnectState()
 
-    object Unavailable : HealthConnectState()
+    data object Unavailable : HealthConnectState()
 
-    object NeedsInstallation : HealthConnectState()
+    data object NeedsInstallation : HealthConnectState()
 
     data class NeedsPermission(
         val client: HealthConnectClient,
@@ -43,7 +41,6 @@ sealed class HealthConnectState {
     ) : HealthConnectState()
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun MainScreen(stateHolder: TrinkAusStateHolder) {
     val context = LocalContext.current

@@ -43,8 +43,7 @@ import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.MainActivity
 import com.yukigasai.trinkaus.presentation.theme.WidgetTheme
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
-import com.yukigasai.trinkaus.shared.getVolumeString
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
+import com.yukigasai.trinkaus.shared.UnitHelper
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import com.yukigasai.trinkaus.widget.actions.RefreshActionCallback
 import kotlin.math.max
@@ -251,9 +250,9 @@ class TrinkAusWidget : GlanceAppWidget() {
                     Text(
                         text =
                             if (size.width > 90.dp) {
-                                "${getVolumeString(currentLevel)} / ${getVolumeStringWithUnit(goal)}"
+                                "${UnitHelper.getVolumeString(currentLevel)} / ${UnitHelper.getVolumeStringWithUnit(goal)}"
                             } else {
-                                getVolumeStringWithUnit(currentLevel)
+                                UnitHelper.getVolumeStringWithUnit(currentLevel)
                             },
                         style =
                             TextStyle(
@@ -264,7 +263,7 @@ class TrinkAusWidget : GlanceAppWidget() {
                     )
                     if (size.height > 110.dp && size.width < 90.dp) {
                         Text(
-                            text = "/ ${getVolumeStringWithUnit(goal)}",
+                            text = "/ ${UnitHelper.getVolumeStringWithUnit(goal)}",
                             style =
                                 TextStyle(
                                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,

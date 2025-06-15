@@ -6,6 +6,7 @@ import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
+import com.yukigasai.trinkaus.shared.UnitHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,6 +43,21 @@ class WatchMessageService : WearableListenerService() {
                         .requestUpdate(HydrationTileService::class.java)
                 }
             }
+
+            Constants.Path.UPDATE_UNIT -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val isMetric = messageEvent.data.toString(Charsets.UTF_8).toBoolean()
+
+                    dataStore.edit { preferences ->
+                        preferences[Constants.DataStore.DataStoreKeys.IS_METRIC] = isMetric
+                    }
+                    UnitHelper.setMetric(this@WatchMessageService, isMetric)
+                    TileService
+                        .getUpdater(this@WatchMessageService)
+                        .requestUpdate(HydrationTileService::class.java)
+                }
+            }
+
             else -> super.onMessageReceived(messageEvent)
         }
     }

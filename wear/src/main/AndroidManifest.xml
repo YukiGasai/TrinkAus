@@ -57,6 +57,7 @@
                 <data android:host="*" />
                 <data android:pathPrefix="/update_hydration" />
                 <data android:pathPrefix="/update_goal" />
+                <data android:pathPrefix="/update_unit" />
             </intent-filter>
         </service>
     </application>

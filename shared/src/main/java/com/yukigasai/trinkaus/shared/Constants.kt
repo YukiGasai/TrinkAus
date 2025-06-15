@@ -10,6 +10,7 @@ object Constants {
         const val FILE_NAME = "trinkaus_hydration_prefs"
 
         object DataStoreKeys {
+            val IS_METRIC = booleanPreferencesKey("is_metric")
             val HYDRATION_LEVEL = doublePreferencesKey("hydration_level")
             val HYDRATION_GOAL = doublePreferencesKey("hydration_goal")
             val IS_REMINDER_ENABLED = booleanPreferencesKey("is_reminder_enabled")
@@ -40,6 +41,7 @@ object Constants {
         const val ADD_HYDRATION = "/add_hydration"
         const val UPDATE_GOAL = "/update_goal"
         const val TEST_NOTIFICATION = "/test_notification"
+        const val UPDATE_UNIT = "/update_unit"
     }
 
     object IntentAction {

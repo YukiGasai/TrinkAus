@@ -1,7 +1,6 @@
 package com.yukigasai.trinkaus.presentation
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import com.yukigasai.trinkaus.R
 
 @Composable
@@ -35,7 +35,7 @@ fun RepositoryButton(modifier: Modifier = Modifier) {
             val intent =
                 Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("https://github.com/YukiGasai/trinkaus"),
+                    "https://github.com/YukiGasai/trinkaus".toUri(),
                 )
             context.startActivity(intent)
         },

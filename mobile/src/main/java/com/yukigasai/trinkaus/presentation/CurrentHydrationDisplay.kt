@@ -23,8 +23,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.yukigasai.trinkaus.shared.getVolumeString
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
+import com.yukigasai.trinkaus.shared.UnitHelper
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
@@ -77,7 +76,7 @@ fun CurrentHydrationDisplay(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = getVolumeString(hydrationLevel),
+                    text = UnitHelper.getVolumeString(hydrationLevel),
                     style =
                         MaterialTheme.typography.displayMedium.copy(
                             fontWeight = FontWeight.Bold,
@@ -85,7 +84,7 @@ fun CurrentHydrationDisplay(
                         ),
                 )
                 Text(
-                    text = "/${getVolumeStringWithUnit(hydrationGoal)}",
+                    text = "/${UnitHelper.getVolumeStringWithUnit(hydrationGoal)}",
                     style =
                         MaterialTheme.typography.headlineSmall.copy(
                             color = MaterialTheme.colorScheme.onSurface,

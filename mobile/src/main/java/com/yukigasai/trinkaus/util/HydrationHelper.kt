@@ -3,6 +3,7 @@ package com.yukigasai.trinkaus.util
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.widget.Toast
 import androidx.datastore.preferences.core.edit
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.HydrationRecord
@@ -10,9 +11,12 @@ import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Volume
+import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
-import com.yukigasai.trinkaus.shared.isMetric
+import com.yukigasai.trinkaus.shared.UnitHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
@@ -65,7 +69,7 @@ object HydrationHelper {
 
             // Read the records and calculate the total water intake
             val waterLevel =
-                if (isMetric()) {
+                if (UnitHelper.isMetric()) {
                     HealthConnectClient.Companion
                         .getOrCreate(context)
                         .readRecords(readRequest)
@@ -99,11 +103,29 @@ object HydrationHelper {
         context: Context,
         amount: Int,
     ) {
+        val isMetric = UnitHelper.isMetric()
+
+        if (isMetric && amount > 4000) {
+            withContext(Dispatchers.Main) {
+                Toast
+                    .makeText(context, context.getString(R.string.metric_add_limit), Toast.LENGTH_SHORT)
+                    .show()
+            }
+            return // Prevent writing unrealistic hydration levels in metric units when for example imperial units are used
+        } else if (!isMetric && amount > 135) {
+            withContext(Dispatchers.Main) {
+                Toast
+                    .makeText(context, context.getString(R.string.imperial_add_limit), Toast.LENGTH_SHORT)
+                    .show()
+            }
+            return // Prevent writing unrealistic hydration levels in imperial units when for example metric units are used
+        }
+
         try {
             val hydrationRecord =
                 HydrationRecord(
                     volume =
-                        if (isMetric()) {
+                        if (isMetric) {
                             Volume.Companion.milliliters(amount.toDouble())
                         } else {
                             Volume.Companion.fluidOuncesUs(
@@ -166,7 +188,7 @@ object HydrationHelper {
                 val recordDate = record.startTime.atZone(systemZoneId).toLocalDate()
                 if (recordDate.year == year && recordDate.monthValue == month) {
                     val volume =
-                        if (isMetric()) {
+                        if (UnitHelper.isMetric()) {
                             record.volume.inLiters
                         } else {
                             record.volume.inFluidOuncesUs
@@ -221,7 +243,7 @@ object HydrationHelper {
                 // Ensure to use the start time of the record for date grouping
                 val recordDate = record.startTime.atZone(systemZoneId).toLocalDate()
                 val volume =
-                    if (isMetric()) {
+                    if (UnitHelper.isMetric()) {
                         record.volume.inLiters
                     } else {
                         record.volume.inFluidOuncesUs
@@ -248,7 +270,7 @@ object HydrationHelper {
         val sortedDates = allHistoryMap.keys.toList()
 
         var longestStreakList = emptyList<HydrationHistoryEntry>()
-        var currentStreakList = mutableListOf<HydrationHistoryEntry>()
+        val currentStreakList = mutableListOf<HydrationHistoryEntry>()
 
         var currentDate = sortedDates.first()
         val lastDateWithRecord = sortedDates.last()
@@ -290,7 +312,7 @@ object HydrationHelper {
         val allHistoryMap = getAllHydrationHistory(context)
 
         var currentStreakLength = 0
-        var today = LocalDate.now(ZoneId.systemDefault())
+        val today = LocalDate.now(ZoneId.systemDefault())
         var checkDate = today
 
         while (checkDate.isAfter(LONG_AGO)) {

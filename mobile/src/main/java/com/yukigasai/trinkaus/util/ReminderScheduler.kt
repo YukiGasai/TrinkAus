@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.map
 import java.util.concurrent.TimeUnit
 
 object ReminderScheduler {
-    const val REMINDER_WORK_TAG = "hydration_reminder_work"
+    private const val REMINDER_WORK_TAG = "hydration_reminder_work"
     private const val ALARM_REQUEST_CODE = 1112
 
     suspend fun startOrRescheduleReminders(context: Context) {

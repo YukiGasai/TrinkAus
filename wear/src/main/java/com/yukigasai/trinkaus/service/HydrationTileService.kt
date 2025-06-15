@@ -1,7 +1,6 @@
 package com.yukigasai.trinkaus.service
 
 import android.content.Context
-import androidx.datastore.preferences.core.edit
 import androidx.wear.protolayout.ActionBuilders
 import androidx.wear.protolayout.ColorBuilders.argb
 import androidx.wear.protolayout.DimensionBuilders
@@ -26,10 +25,9 @@ import com.yukigasai.trinkaus.presentation.MainActivity
 import com.yukigasai.trinkaus.presentation.PROGRESS_BAR_GAP_SIZE
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
+import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.SendMessageThread
-import com.yukigasai.trinkaus.shared.getVolumeString
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
-import com.yukigasai.trinkaus.shared.isMetric
+import com.yukigasai.trinkaus.shared.UnitHelper
 import kotlinx.coroutines.flow.first
 import com.yukigasai.trinkaus.shared.R as R2
 
@@ -79,26 +77,16 @@ private suspend fun tile(
     var goalHydration = dataStore.data.first()[Constants.DataStore.DataStoreKeys.HYDRATION_GOAL] ?: 3.0
 
     if (requestParams.currentState.lastClickableId == ADD_WATER_025) {
-        val addedWater = if (isMetric()) 0.25 else 9.0
-        currentHydration += addedWater
-        dataStore.edit { settings ->
-            settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
-        }
         SendMessageThread(
             context = context,
             path = Constants.Path.ADD_HYDRATION,
-            msg = addedWater,
+            msg = HydrationOption.SMALL,
         ).start()
     } else if (requestParams.currentState.lastClickableId == ADD_WATER_05) {
-        val addedWater = if (isMetric()) 0.5 else 20.0
-        currentHydration += addedWater
-        dataStore.edit { settings ->
-            settings[Constants.DataStore.DataStoreKeys.HYDRATION_LEVEL] = currentHydration
-        }
         SendMessageThread(
             context = context,
             path = Constants.Path.ADD_HYDRATION,
-            msg = addedWater,
+            msg = HydrationOption.MEDIUM,
         ).start()
     }
 
@@ -185,7 +173,7 @@ private fun tileLayout(
                         .build(),
                 ).addContent(
                     Text
-                        .Builder(context, getVolumeString(currentHydration))
+                        .Builder(context, UnitHelper.getVolumeString(currentHydration))
                         .setColor(argb(Colors.DEFAULT.primary))
                         .build(),
                 ).addContent(
@@ -204,7 +192,7 @@ private fun tileLayout(
                         Text
                             .Builder(
                                 context,
-                                "${getVolumeStringWithUnit(goalHydration - currentHydration)} ${
+                                "${UnitHelper.getVolumeStringWithUnit(goalHydration - currentHydration)} ${
                                     context.getString(
                                         R.string.missing,
                                     )

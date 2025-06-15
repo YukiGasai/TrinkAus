@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
+import com.yukigasai.trinkaus.shared.UnitHelper
 import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import ir.ehsannarmani.compose_charts.ColumnChart
@@ -149,8 +149,8 @@ fun HydrationGraph(
                             Color(
                                 MaterialTheme.colorScheme.secondaryContainer.value,
                             ),
-                        contentBuilder = { dataIndex, valueIndex, value ->
-                            "${graphData[dataIndex].label}: ${getVolumeStringWithUnit(value)}"
+                        contentBuilder = { dataIndex, _, value ->
+                            "${graphData[dataIndex].label}: ${UnitHelper.getVolumeStringWithUnit(value)}"
                         },
                     ),
                 indicatorProperties =

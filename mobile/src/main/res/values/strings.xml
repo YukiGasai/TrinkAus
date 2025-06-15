@@ -46,7 +46,11 @@
     <string name="health_connect_install_description">You need to install Health Connect on your phone to make sure we can track your hydration. The app can be downloaded from the PlayStore.</string>
     <string name="install_or_update">Install / Update</string>
     <string name="minutes">Minutes</string>
-    <string name="reminder_interval">Reminder interval</string>
+    <string name="reminder_interval">Adjust water intake amounts</string>
     <string name="custom_reminder_sound">Unique reminder sound</string>
     <string name="reminder_permission_denied">You need to allow notifications to enable reminders.</string>
+    <string name="unit_system">Unit System</string>
+    <string name="units_changed">The unit system has changed to %1$s. Make sure to update the goal and water intake amounts.</string>
+    <string name="metric_add_limit">Can\'t add more than 4 liters at once</string>
+    <string name="imperial_add_limit">Can\'t add more than 135 ounces at once</string>
 </resources>

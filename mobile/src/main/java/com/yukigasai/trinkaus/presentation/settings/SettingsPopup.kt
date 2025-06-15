@@ -1,14 +1,15 @@
-package com.yukigasai.trinkaus.presentation
+package com.yukigasai.trinkaus.presentation.settings
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,72 +19,59 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.SheetState
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction.Companion.Done
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.datastore.preferences.core.edit
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.yukigasai.trinkaus.R
+import com.yukigasai.trinkaus.presentation.RepositoryButton
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.SendMessageResult
+import com.yukigasai.trinkaus.shared.UnitHelper
 import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getDefaultAmount
-import com.yukigasai.trinkaus.shared.getDisplayName
-import com.yukigasai.trinkaus.shared.getVolumeStringWithUnit
-import com.yukigasai.trinkaus.shared.isMetric
 import com.yukigasai.trinkaus.util.HydrationHelper
 import com.yukigasai.trinkaus.util.NotificationWorker
 import com.yukigasai.trinkaus.util.ReminderScheduler
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -93,6 +81,8 @@ fun SettingsPopup(
     stateHolder: TrinkAusStateHolder,
     updateShowSettingsModal: (Boolean) -> Unit,
 ) {
+    val options = listOf("L/mL", "fl. oz.")
+    var isMetricIndex by remember { mutableIntStateOf(if (UnitHelper.isMetric()) 0 else 1) }
     val hydrationGoal = stateHolder.hydrationGoal.collectAsState(initial = 2.0)
     val reminderEnabled = stateHolder.isReminderEnabled.collectAsState(false)
     val reminderDespiteGoal = stateHolder.reminderDespiteGoal.collectAsState(false)
@@ -104,6 +94,7 @@ fun SettingsPopup(
     val useGraphHistory = stateHolder.useGraphHistory.collectAsState(false)
     var showNoNodesDialog by remember { mutableStateOf(false) }
     var isWearApiAvailable by remember { mutableStateOf(true) }
+    var unitSystemChanged by remember { mutableStateOf(false) }
 
     val smallAmount =
         stateHolder.smallAmount.collectAsState(null)
@@ -139,8 +130,8 @@ fun SettingsPopup(
         }
 
     fun isNotificationPermissionGranted(): Boolean =
-        context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     LaunchedEffect(key1 = Unit) {
         isWearApiAvailable = WearableMessenger.isWearableApiAvailable(context)
@@ -154,7 +145,7 @@ fun SettingsPopup(
             val intent =
                 Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("market://details?id=$packageId"),
+                    "market://details?id=$packageId".toUri(),
                 )
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
@@ -163,7 +154,7 @@ fun SettingsPopup(
                 val intent =
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=$packageId"),
+                        "https://play.google.com/store/apps/details?id=$packageId".toUri(),
                     )
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
@@ -185,26 +176,56 @@ fun SettingsPopup(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = spacedBy(16.dp),
         ) {
-            OptionSection {
-                Text(
-                    text = stringResource(R.string.water_settings),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                HorizontalDivider(
-                    thickness = 2.dp,
-                    modifier = Modifier.width(200.dp).padding(bottom = 4.dp),
-                )
+            OptionSection(
+                headerTitle = stringResource(R.string.water_settings),
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = spacedBy(8.dp),
+                    horizontalAlignment = Alignment.Start,
+                ) {
+                    SettingsSubTitle(stringResource(R.string.unit_system))
+
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        options.forEachIndexed { index, label ->
+                            SegmentedButton(
+                                modifier = Modifier.weight(1f),
+                                shape =
+                                    SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = options.size,
+                                    ),
+                                onClick = {
+                                    isMetricIndex = index
+                                    val isMetricButton = index == 0
+                                    unitSystemChanged = true
+                                    UnitHelper.setMetric(context, isMetricButton, updateWatch = true)
+                                },
+                                selected = index == isMetricIndex,
+                                label = { Text(label) },
+                            )
+                        }
+                    }
+                }
+
+                if (unitSystemChanged) {
+                    Text(
+                        text = stringResource(R.string.units_changed, options[isMetricIndex]),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier =
+                            Modifier.padding(bottom = 8.dp).clickable {
+                                unitSystemChanged = false
+                            },
+                    )
+                }
+
+                SettingsSubTitle(stringResource(R.string.daily_water_intake_goal))
 
                 Text(
-                    text = stringResource(R.string.daily_water_intake_goal),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-
-                Text(
-                    text = getVolumeStringWithUnit(hydrationGoal.value),
+                    text = UnitHelper.getVolumeStringWithUnit(hydrationGoal.value),
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -213,105 +234,69 @@ fun SettingsPopup(
                     value = hydrationGoal.value.toFloat(),
                     onValueChange = {
                         scope.launch(Dispatchers.IO) {
+                            val amount =
+                                if (UnitHelper.isMetric()) {
+                                    (it * 10).roundToInt() / 10.0
+                                } else {
+                                    it
+                                        .toInt()
+                                        .toDouble()
+                                }
+
                             dataStore.edit { preferences ->
-                                preferences[DataStoreKeys.HYDRATION_GOAL] =
-                                    if (isMetric()) {
-                                        (it * 10).roundToInt() / 10.0
-                                    } else {
-                                        it
-                                            .toInt()
-                                            .toDouble()
-                                    }
+                                preferences[DataStoreKeys.HYDRATION_GOAL] = amount
                             }
+                            WearableMessenger.sendMessage(
+                                context = context,
+                                path = Constants.Path.UPDATE_GOAL,
+                                msg = amount,
+                            )
                         }
                     },
-                    valueRange = if (isMetric()) 1f..10f else 1f..200.0f,
+                    valueRange = if (UnitHelper.isMetric()) 1f..10f else 1f..200.0f,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                Text(
-                    text = stringResource(R.string.intake_amounts_setting),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                SettingsSubTitle(stringResource(R.string.intake_amounts_setting))
+
+                val amounts =
+                    listOf(
+                        HydrationOption.SMALL to smallAmount,
+                        HydrationOption.MEDIUM to mediumAmount,
+                        HydrationOption.LARGE to largeAmount,
+                    )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = spacedBy(16.dp),
                 ) {
-                    if (smallAmount.value == null) {
-                        CircularProgressIndicator()
-                    } else {
-                        WaterIntakeItem(
-                            hydrationOption = HydrationOption.SMALL,
-                            modifier = Modifier.weight(1f),
-                            initialAmount = smallAmount.value!!,
-                            sheetState = sheetState,
-                            onAmountChange = {
-                                scope.launch(Dispatchers.IO) {
-                                    dataStore.edit { preferences ->
-                                        preferences[DataStoreKeys.SMALL_AMOUNT] =
-                                            it.toIntOrNull()
-                                                ?: HydrationOption.SMALL.getDefaultAmount()
+                    amounts.forEach { (hydrationOption, amountState) ->
+                        if (amountState.value == null) {
+                            CircularProgressIndicator()
+                        } else {
+                            WaterIntakeItem(
+                                hydrationOption = hydrationOption,
+                                modifier = Modifier.weight(1f),
+                                initialAmount = amountState.value!!,
+                                sheetState = sheetState,
+                                onAmountChange = {
+                                    scope.launch(Dispatchers.IO) {
+                                        dataStore.edit { preferences ->
+                                            preferences[hydrationOption.dataStoreKey] =
+                                                it.toIntOrNull() ?: hydrationOption.getDefaultAmount()
+                                        }
                                     }
-                                }
-                            },
-                        )
-                    }
-                    if (mediumAmount.value == null) {
-                        CircularProgressIndicator()
-                    } else {
-                        WaterIntakeItem(
-                            hydrationOption = HydrationOption.MEDIUM,
-                            modifier = Modifier.weight(1f),
-                            initialAmount = mediumAmount.value!!,
-                            sheetState = sheetState,
-                            onAmountChange = {
-                                scope.launch(Dispatchers.IO) {
-                                    dataStore.edit { preferences ->
-                                        preferences[DataStoreKeys.MEDIUM_AMOUNT] =
-                                            it.toIntOrNull()
-                                                ?: HydrationOption.MEDIUM.getDefaultAmount()
-                                    }
-                                }
-                            },
-                        )
-                    }
-                    if (largeAmount.value == null) {
-                        CircularProgressIndicator()
-                    } else {
-                        WaterIntakeItem(
-                            hydrationOption = HydrationOption.LARGE,
-                            modifier = Modifier.weight(1f),
-                            initialAmount = largeAmount.value!!,
-                            sheetState = sheetState,
-                            onAmountChange = {
-                                scope.launch(Dispatchers.IO) {
-                                    dataStore.edit { preferences ->
-                                        preferences[DataStoreKeys.LARGE_AMOUNT] =
-                                            it.toIntOrNull()
-                                                ?: HydrationOption.LARGE.getDefaultAmount()
-                                    }
-                                }
-                            },
-                        )
+                                },
+                            )
+                        }
                     }
                 }
             }
 
-            OptionSection {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(R.string.enable_reminders),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+            OptionSection(
+                headerTitle = stringResource(R.string.enable_reminders),
+                headerContent = {
                     Switch(
                         checked = reminderEnabled.value,
                         onCheckedChange = { isChecked ->
@@ -320,7 +305,7 @@ fun SettingsPopup(
                                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                             ) {
                                 permissionLauncher.launch(
-                                    android.Manifest.permission.POST_NOTIFICATIONS,
+                                    Manifest.permission.POST_NOTIFICATIONS,
                                 )
                                 return@Switch
                             }
@@ -337,18 +322,9 @@ fun SettingsPopup(
                             }
                         },
                     )
-                }
-
-                HorizontalDivider(
-                    thickness = 2.dp,
-                    modifier = Modifier.width(200.dp).padding(bottom = 4.dp),
-                )
-
-                Text(
-                    text = stringResource(R.string.reminder_time_range),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                },
+            ) {
+                SettingsSubTitle(stringResource(R.string.reminder_time_range))
 
                 Text(
                     text = "${reminderStartTime.value.toInt()}:00 - ${reminderEndTime.value.toInt()}:00",
@@ -379,11 +355,7 @@ fun SettingsPopup(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                Text(
-                    text = stringResource(R.string.reminder_interval),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                SettingsSubTitle(stringResource(R.string.reminder_interval))
 
                 Text(
                     text = "${reminderInterval.value} ${stringResource(R.string.minutes)}",
@@ -416,52 +388,31 @@ fun SettingsPopup(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(R.string.reminder_despite_goal),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Switch(
-                        enabled = reminderEnabled.value,
-                        checked = reminderDespiteGoal.value && reminderEnabled.value,
-                        onCheckedChange = { isChecked ->
-                            scope.launch(Dispatchers.IO) {
-                                dataStore.edit { preferences ->
-                                    preferences[DataStoreKeys.REMINDER_DESPITE_GOAL] =
-                                        isChecked
-                                }
+                SwitchWithLabel(
+                    isEnabled = reminderEnabled.value,
+                    labelText = stringResource(R.string.reminder_despite_goal),
+                    isChecked = reminderDespiteGoal.value && reminderEnabled.value,
+                    onCheckedChange = { isChecked ->
+                        scope.launch(Dispatchers.IO) {
+                            dataStore.edit { preferences ->
+                                preferences[DataStoreKeys.REMINDER_DESPITE_GOAL] = isChecked
                             }
-                        },
-                    )
-                }
+                        }
+                    },
+                )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(R.string.custom_reminder_sound),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Switch(
-                        enabled = reminderEnabled.value,
-                        checked = reminderCustomSound.value && reminderEnabled.value,
-                        onCheckedChange = { isChecked ->
-                            scope.launch(Dispatchers.IO) {
-                                dataStore.edit { preferences ->
-                                    preferences[DataStoreKeys.REMINDER_CUSTOM_SOUND] = isChecked
-                                }
+                SwitchWithLabel(
+                    isEnabled = reminderEnabled.value,
+                    labelText = stringResource(R.string.custom_reminder_sound),
+                    isChecked = reminderCustomSound.value && reminderEnabled.value,
+                    onCheckedChange = { isChecked ->
+                        scope.launch(Dispatchers.IO) {
+                            dataStore.edit { preferences ->
+                                preferences[DataStoreKeys.REMINDER_CUSTOM_SOUND] = isChecked
                             }
-                        },
-                    )
-                }
+                        }
+                    },
+                )
 
                 TextButton(
                     enabled = reminderEnabled.value,
@@ -491,60 +442,32 @@ fun SettingsPopup(
                 }
             }
 
-            OptionSection {
-                Text(
-                    text = stringResource(R.string.general),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                HorizontalDivider(
-                    thickness = 2.dp,
-                    modifier = Modifier.width(200.dp).padding(bottom = 4.dp),
+            OptionSection(
+                headerTitle = stringResource(R.string.general),
+            ) {
+                SwitchWithLabel(
+                    labelText = stringResource(R.string.hide_konfetti),
+                    isChecked = isHideKonfettiEnabled.value,
+                    onCheckedChange = { isChecked ->
+                        scope.launch(Dispatchers.IO) {
+                            dataStore.edit { preferences ->
+                                preferences[DataStoreKeys.HIDE_KONFETTI] = isChecked
+                            }
+                        }
+                    },
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(R.string.hide_konfetti),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Switch(
-                        checked = isHideKonfettiEnabled.value,
-                        onCheckedChange = { isChecked ->
-                            scope.launch(Dispatchers.IO) {
-                                dataStore.edit { preferences ->
-                                    preferences[DataStoreKeys.HIDE_KONFETTI] = isChecked
-                                }
+                SwitchWithLabel(
+                    labelText = stringResource(R.string.use_graph_history),
+                    isChecked = useGraphHistory.value,
+                    onCheckedChange = { isChecked ->
+                        scope.launch(Dispatchers.IO) {
+                            dataStore.edit { preferences ->
+                                preferences[DataStoreKeys.USE_GRAPH_HISTORY] = isChecked
                             }
-                        },
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(R.string.use_graph_history),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Switch(
-                        checked = useGraphHistory.value,
-                        onCheckedChange = { isChecked ->
-                            scope.launch(Dispatchers.IO) {
-                                dataStore.edit { preferences ->
-                                    preferences[DataStoreKeys.USE_GRAPH_HISTORY] = isChecked
-                                }
-                            }
-                        },
-                    )
-                }
+                        }
+                    },
+                )
 
                 TextButton(
                     onClick = {
@@ -632,7 +555,7 @@ fun SettingsPopup(
                                 if (!isWearApiAvailable) {
                                     "com.google.android.wearable.app"
                                 } else {
-                                    "com.yukigasai.trinkaus"
+                                    context.packageName
                                 }
 
                             Text(
@@ -666,120 +589,6 @@ fun SettingsPopup(
 
                 RepositoryButton()
             }
-        }
-    }
-}
-
-@Composable
-fun OptionSection(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Card(
-        modifier = modifier,
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = spacedBy(8.dp),
-        ) {
-            content()
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun WaterIntakeItem(
-    hydrationOption: HydrationOption,
-    initialAmount: Int,
-    sheetState: SheetState,
-    onAmountChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-
-    var editedAmount by remember(initialAmount) { mutableStateOf(initialAmount.toString()) }
-    var isFocused by remember { mutableStateOf(false) }
-    LaunchedEffect(initialAmount) {
-        if (!isFocused) {
-            editedAmount = initialAmount.toString()
-        }
-    }
-
-    Card(
-        modifier = modifier.width(120.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-    ) {
-        Column(
-            modifier =
-                Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                painter = painterResource(hydrationOption.icon),
-                contentDescription = hydrationOption.getDisplayName(context),
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            TextField(
-                modifier =
-                    Modifier.onFocusChanged { focusState ->
-                        isFocused = focusState.isFocused
-
-                        if (isFocused) {
-                            scope.launch(Dispatchers.Main) {
-                                delay(700)
-                                sheetState.expand()
-                            }
-                        } else {
-                            onAmountChange(editedAmount)
-                        }
-                    },
-                value = editedAmount,
-                onValueChange = { newValue ->
-                    if (newValue.all { it.isDigit() }) {
-                        editedAmount = newValue
-                    }
-                },
-                textStyle =
-                    TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontSize = 18.sp,
-                    ),
-                keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = Done,
-                    ),
-                singleLine = true,
-                maxLines = 1,
-                colors =
-                    TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-            )
-            Text(
-                modifier = Modifier.padding(top = 8.dp),
-                text = hydrationOption.getDisplayName(context),
-                style =
-                    MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                    ),
-                color = MaterialTheme.colorScheme.onSurface,
-            )
         }
     }
 }
