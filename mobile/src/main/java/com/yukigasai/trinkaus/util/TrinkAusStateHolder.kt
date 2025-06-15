@@ -55,17 +55,22 @@ class TrinkAusStateHolder(
 
     val startTime: Flow<Float> =
         dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.REMINDER_START_TIME] ?: 0.0f
+            preferences[DataStoreKeys.REMINDER_START_TIME] ?: 8.0f
         }
 
     val endTime: Flow<Float> =
         dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.REMINDER_END_TIME] ?: 0.0f
+            preferences[DataStoreKeys.REMINDER_END_TIME] ?: 23.0f
         }
 
     val reminderInterval: Flow<Int> =
         dataStore.data.map { preferences ->
             preferences[DataStoreKeys.REMINDER_INTERVAL] ?: 60
+        }
+
+    val reminderCustomSound: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.REMINDER_CUSTOM_SOUND] == true
         }
 
     val isHideKonfettiEnabled: Flow<Boolean> =

@@ -90,6 +90,11 @@ You can run the linter with the following command to check for code style issues
 
 This project is licensed under the [MIT License](./LICENSE) - see the LICENSE file for details.
 
+## ©️️Credit
+
+- Icons from [Lucide](https://lucide.dev/)
+- Notification Sound from [pickanothername](https://freesound.org/people/pickanothername/sounds/592594/)
+
 ---
 
 *Stay Hydrated, Stay Healthy!*

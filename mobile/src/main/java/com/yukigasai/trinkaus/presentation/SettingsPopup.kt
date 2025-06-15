@@ -93,9 +93,10 @@ fun SettingsPopup(
     val hydrationGoal = stateHolder.hydrationGoal.collectAsState(initial = 2.0)
     val reminderEnabled = stateHolder.isReminderEnabled.collectAsState(false)
     val reminderDespiteGoal = stateHolder.reminderDespiteGoal.collectAsState(false)
-    val reminderStartTime = stateHolder.startTime.collectAsState(0f)
-    val reminderEndTime = stateHolder.endTime.collectAsState(24f)
+    val reminderStartTime = stateHolder.startTime.collectAsState(8f)
+    val reminderEndTime = stateHolder.endTime.collectAsState(23f)
     val reminderInterval = stateHolder.reminderInterval.collectAsState(60)
+    val reminderCustomSound = stateHolder.reminderCustomSound.collectAsState(false)
     val isHideKonfettiEnabled = stateHolder.isHideKonfettiEnabled.collectAsState(false)
     val useGraphHistory = stateHolder.useGraphHistory.collectAsState(false)
     var showNoNodesDialog by remember { mutableStateOf(false) }
@@ -182,11 +183,6 @@ fun SettingsPopup(
 
                 Slider(
                     value = hydrationGoal.value.toFloat(),
-                    onValueChangeFinished = {
-                        scope.launch(Dispatchers.IO) {
-                            ReminderScheduler.startOrRescheduleReminders(context)
-                        }
-                    },
                     onValueChange = {
                         scope.launch(Dispatchers.IO) {
                             dataStore.edit { preferences ->
@@ -365,6 +361,11 @@ fun SettingsPopup(
                 Slider(
                     enabled = reminderEnabled.value,
                     value = reminderInterval.value.toFloat(),
+                    onValueChangeFinished = {
+                        scope.launch(Dispatchers.IO) {
+                            ReminderScheduler.startOrRescheduleReminders(context)
+                        }
+                    },
                     onValueChange = { values ->
                         scope.launch(Dispatchers.IO) {
                             dataStore.edit { preferences ->
@@ -395,6 +396,29 @@ fun SettingsPopup(
                                 dataStore.edit { preferences ->
                                     preferences[DataStoreKeys.REMINDER_DESPITE_GOAL] =
                                         isChecked
+                                }
+                            }
+                        },
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(R.string.custom_reminder_sound),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Switch(
+                        enabled = reminderEnabled.value,
+                        checked = reminderCustomSound.value && reminderEnabled.value,
+                        onCheckedChange = { isChecked ->
+                            scope.launch(Dispatchers.IO) {
+                                dataStore.edit { preferences ->
+                                    preferences[DataStoreKeys.REMINDER_CUSTOM_SOUND] = isChecked
                                 }
                             }
                         },

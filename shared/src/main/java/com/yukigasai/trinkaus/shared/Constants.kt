@@ -17,6 +17,7 @@ object Constants {
             val REMINDER_START_TIME = floatPreferencesKey("reminder_start_time")
             val REMINDER_END_TIME = floatPreferencesKey("reminder_end_time")
             val REMINDER_INTERVAL = intPreferencesKey("reminder_interval")
+            val REMINDER_CUSTOM_SOUND = booleanPreferencesKey("reminder_custom_sound")
             val HIDE_KONFETTI = booleanPreferencesKey("hide_konfetti")
             val USE_GRAPH_HISTORY = booleanPreferencesKey("use_graph_history")
             val SMALL_AMOUNT = intPreferencesKey("small_amount")
@@ -27,6 +28,7 @@ object Constants {
 
     object Notification {
         const val CHANNEL_ID = "hydration_reminder_channel"
+        const val CHANNEL_ID_CUSTOM_SOUND = "hydration_reminder_channel_custom_sound"
         const val CHANNEL_NAME = "Hydration Reminder"
         const val CHANNEL_DESCRIPTION = "Channel for hydration reminders"
         const val MESSAGE_ID = 1

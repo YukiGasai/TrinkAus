@@ -47,4 +47,5 @@
     <string name="install_or_update">Install / Update</string>
     <string name="minutes">Minutes</string>
     <string name="reminder_interval">Reminder interval</string>
+    <string name="custom_reminder_sound">Unique reminder sound</string>
 </resources>
