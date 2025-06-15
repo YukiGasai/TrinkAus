@@ -48,4 +48,5 @@
     <string name="minutes">Minutes</string>
     <string name="reminder_interval">Reminder interval</string>
     <string name="custom_reminder_sound">Unique reminder sound</string>
+    <string name="reminder_permission_denied">You need to allow notifications to enable reminders.</string>
 </resources>

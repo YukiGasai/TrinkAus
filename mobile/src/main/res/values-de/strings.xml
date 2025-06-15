@@ -49,4 +49,5 @@
     <string name="minutes">Minuten</string>
     <string name="reminder_interval">Erinnerungsintervall</string>
     <string name="custom_reminder_sound">Einzigartiger Erinnerungs-Ton</string>
+    <string name="reminder_permission_denied">Sie müssen Benarichtigungen erlauben um Erinnerungen zu erhalten.</string>
 </resources>

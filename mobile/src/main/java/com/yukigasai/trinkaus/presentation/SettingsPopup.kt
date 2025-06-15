@@ -4,7 +4,10 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
@@ -113,6 +116,31 @@ fun SettingsPopup(
     val dataStore = DataStoreSingleton.getInstance(context)
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) { isGranted ->
+            if (isGranted) {
+                scope.launch(Dispatchers.IO) {
+                    dataStore.edit { preferences ->
+                        preferences[DataStoreKeys.IS_REMINDER_ENABLED] = true
+                    }
+                    ReminderScheduler.startOrRescheduleReminders(context)
+                }
+            } else {
+                Toast
+                    .makeText(
+                        context,
+                        context.getString(R.string.reminder_permission_denied),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+            }
+        }
+
+    fun isNotificationPermissionGranted(): Boolean =
+        context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
 
     LaunchedEffect(key1 = Unit) {
         isWearApiAvailable = WearableMessenger.isWearableApiAvailable(context)
@@ -287,6 +315,16 @@ fun SettingsPopup(
                     Switch(
                         checked = reminderEnabled.value,
                         onCheckedChange = { isChecked ->
+                            if (isChecked &&
+                                !isNotificationPermissionGranted() &&
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                            ) {
+                                permissionLauncher.launch(
+                                    android.Manifest.permission.POST_NOTIFICATIONS,
+                                )
+                                return@Switch
+                            }
+
                             scope.launch(Dispatchers.IO) {
                                 dataStore.edit { preferences ->
                                     preferences[DataStoreKeys.IS_REMINDER_ENABLED] = isChecked
