@@ -23,10 +23,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Settings
+import com.composables.icons.lucide.Share
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.presentation.AddHydrationButtons
 import com.yukigasai.trinkaus.presentation.CurrentHydrationDisplay
@@ -61,10 +66,18 @@ fun MainUI(
     val isHideKonfettiEnabled = stateHolder.isHideKonfettiEnabled.collectAsState(false)
     val spacing = 22.dp
 
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val graphicsLayer = rememberGraphicsLayer()
 
     Scaffold(
-        modifier = modifier,
+        modifier =
+            modifier.drawWithContent {
+                graphicsLayer.record {
+                    this@drawWithContent.drawContent()
+                }
+                drawLayer(graphicsLayer)
+            },
     ) { padding ->
         val scrollState = rememberScrollState()
 
@@ -128,11 +141,19 @@ fun MainUI(
                     contentDescription = stringResource(R.string.settings),
                 )
             }
+            IconButton(
+                modifier = Modifier.align(Alignment.TopStart),
+                onClick = { stateHolder.shareWaterIntake(context, graphicsLayer) },
+            ) {
+                Icon(
+                    imageVector = Lucide.Share,
+                    contentDescription = stringResource(R.string.share),
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(spacing))
 
-        // ... Konfetti and SettingsPopup logic remains the same ...
         if (showConfetti.value && !isHideKonfettiEnabled.value) {
             KonfettiView(
                 modifier = Modifier.fillMaxSize(),

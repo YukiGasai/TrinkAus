@@ -55,4 +55,6 @@
     <string name="imperial_add_limit">Can\'t add more than 135 ounces at once</string>
     <string name="hours">Hours</string>
     <string name="open_play_store">Open Play Store</string>
+    <string name="share">Share</string>
+    <string name="share_title">Share your progress with friends!</string>
 </resources>

@@ -1,10 +1,18 @@
 package com.yukigasai.trinkaus.util
 
 import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.core.content.FileProvider
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.HydrationOption
@@ -22,6 +30,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.time.LocalDate
 
 class TrinkAusStateHolder(
@@ -143,5 +153,50 @@ class TrinkAusStateHolder(
             )
             isLoading.value = false
         }
+    }
+
+    fun shareWaterIntake(
+        context: Context,
+        graphicsLayer: GraphicsLayer,
+    ) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val screenshotBitmap = graphicsLayer.toImageBitmap()
+            val imageUri = saveBitmapAndGetUri(context, screenshotBitmap)
+            val shareIntent =
+                Intent(Intent.ACTION_SEND).apply {
+                    type = "image/png"
+                    putExtra(Intent.EXTRA_STREAM, imageUri)
+                    // Grant permission for the receiving app to read the URI
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+            context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.share_title)))
+        }
+    }
+}
+
+private fun saveBitmapAndGetUri(
+    context: Context,
+    bitmap: ImageBitmap,
+): Uri? {
+    return try {
+        val cacheDir = context.cacheDir ?: return null
+        // Create a directory for the images
+        val imagePath = File(cacheDir, "images")
+        imagePath.mkdirs()
+
+        // Create the image file
+        val file = File(imagePath, "shared_image.png")
+
+        // Save the bitmap to the file
+        val outputStream = FileOutputStream(file)
+        bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 90, outputStream)
+        outputStream.flush()
+        outputStream.close()
+
+        // Get the content URI using the FileProvider
+        FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }

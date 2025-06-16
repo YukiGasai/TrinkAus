@@ -56,4 +56,6 @@
     <string name="imperial_add_limit">Es kann nicht mehr als 135 Ounces mit einmal hinzugefügt werden</string>
     <string name="hours">Stunden</string>
     <string name="open_play_store">Play Store öffnen</string>
+    <string name="share">Teilen</string>
+    <string name="share_title">Teilen sie ihren Fortschritt mit Freunden!</string>
 </resources>

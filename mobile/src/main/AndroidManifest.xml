@@ -28,6 +28,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TrinkAus"
         tools:targetApi="35">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.yukigasai.trinkaus.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".presentation.MainActivity"
             android:exported="true">
