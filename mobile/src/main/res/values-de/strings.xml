@@ -54,4 +54,6 @@
     <string name="units_changed">Das Einheitensystem wurde zu %1$s geändert. Stellen sie sicher das Ziel und die Wassermengen zu aktualisieren.</string>
     <string name="metric_add_limit">Es kann nicht mehr als 4 Liter mit einmal hinzugefügt werden</string>
     <string name="imperial_add_limit">Es kann nicht mehr als 135 Ounces mit einmal hinzugefügt werden</string>
+    <string name="hours">Stunden</string>
+    <string name="open_play_store">Play Store öffnen</string>
 </resources>

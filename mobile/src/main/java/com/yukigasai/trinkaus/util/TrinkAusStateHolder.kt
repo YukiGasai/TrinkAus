@@ -10,7 +10,6 @@ import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getAmount
-import com.yukigasai.trinkaus.shared.getDefaultAmount
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -32,6 +31,11 @@ class TrinkAusStateHolder(
     val scope = CoroutineScope(Dispatchers.IO)
     val isLoading = mutableStateOf(false)
     val selectedDate = mutableStateOf(LocalDate.now())
+
+    val isMetric: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[DataStoreKeys.IS_METRIC] == true
+        }
 
     val hydrationLevel: Flow<Double> =
         dataStore.data.map { preferences ->
@@ -63,11 +67,6 @@ class TrinkAusStateHolder(
             preferences[DataStoreKeys.REMINDER_END_TIME] ?: 23.0f
         }
 
-    val reminderInterval: Flow<Int> =
-        dataStore.data.map { preferences ->
-            preferences[DataStoreKeys.REMINDER_INTERVAL] ?: 60
-        }
-
     val reminderCustomSound: Flow<Boolean> =
         dataStore.data.map { preferences ->
             preferences[DataStoreKeys.REMINDER_CUSTOM_SOUND] == true
@@ -82,36 +81,6 @@ class TrinkAusStateHolder(
         dataStore.data.map { preferences ->
             preferences[DataStoreKeys.USE_GRAPH_HISTORY] == true
         }
-
-    val smallAmount: StateFlow<Int?> =
-        dataStore.data
-            .map { prefs ->
-                prefs[DataStoreKeys.SMALL_AMOUNT] ?: HydrationOption.SMALL.getDefaultAmount()
-            }.stateIn(
-                scope = scope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = null,
-            )
-
-    val mediumAmount: StateFlow<Int?> =
-        dataStore.data
-            .map { prefs ->
-                prefs[DataStoreKeys.MEDIUM_AMOUNT] ?: HydrationOption.MEDIUM.getDefaultAmount()
-            }.stateIn(
-                scope = scope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = null,
-            )
-
-    val largeAmount: StateFlow<Int?> =
-        dataStore.data
-            .map { prefs ->
-                prefs[DataStoreKeys.LARGE_AMOUNT] ?: HydrationOption.LARGE.getDefaultAmount()
-            }.stateIn(
-                scope = scope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = null,
-            )
 
     @OptIn(FlowPreview::class)
     val largestStreak: StateFlow<StreakResult> =

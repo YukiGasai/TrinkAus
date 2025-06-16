@@ -53,4 +53,6 @@
     <string name="units_changed">The unit system has changed to %1$s. Make sure to update the goal and water intake amounts.</string>
     <string name="metric_add_limit">Can\'t add more than 4 liters at once</string>
     <string name="imperial_add_limit">Can\'t add more than 135 ounces at once</string>
+    <string name="hours">Hours</string>
+    <string name="open_play_store">Open Play Store</string>
 </resources>
