@@ -1,5 +1,6 @@
 package com.yukigasai.trinkaus.presentation.main
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -60,8 +61,9 @@ fun MainUI(
     val largestStreak = stateHolder.largestStreak.collectAsState(StreakResult())
     val currentStreak = stateHolder.currentStreak.collectAsState(StreakResult())
     val useGraphHistory = stateHolder.useGraphHistory.collectAsState(false)
-    val showConfetti = remember { mutableStateOf(false) }
+    val showConfetti = remember { stateHolder.showConfetti }
     val showSettingsModal = remember { mutableStateOf(false) }
+    val showAddWaterModal = remember { mutableStateOf(false) }
     val isLoading = remember { stateHolder.isLoading }
     val isHideKonfettiEnabled = stateHolder.isHideKonfettiEnabled.collectAsState(false)
     val spacing = 22.dp
@@ -99,6 +101,10 @@ fun MainUI(
                 CurrentHydrationDisplay(
                     hydrationLevel = hydrationLevel.value,
                     hydrationGoal = hydrationGoal.value,
+                    modifier =
+                        Modifier.clickable {
+                            showAddWaterModal.value = true
+                        },
                 )
 
                 if (hydrationGoal.value > 0) {
@@ -111,7 +117,6 @@ fun MainUI(
 
                 AddHydrationButtons {
                     scope.launch {
-                        showConfetti.value = true
                         stateHolder.addHydration(it)
                     }
                 }
@@ -181,6 +186,13 @@ fun MainUI(
             SettingsPopup(
                 stateHolder = stateHolder,
                 updateShowSettingsModal = { showSettingsModal.value = it },
+            )
+        }
+
+        if (showAddWaterModal.value) {
+            AddWaterPopup(
+                stateHolder = stateHolder,
+                onDismiss = { showAddWaterModal.value = false },
             )
         }
     }

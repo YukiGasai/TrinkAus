@@ -41,6 +41,12 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    packaging {
+        resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
+        resources.excludes.add("META-INF/INDEX.LIST")
+        resources.excludes.add("META-INF/io.netty.versions.properties")
+    }
 }
 
 dependencies {
@@ -83,4 +89,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    implementation("io.ktor:ktor-server-core-jvm:3.1.3")
+    implementation("io.ktor:ktor-server-netty-jvm:3.1.3")
+    implementation("io.ktor:ktor-server-cors-jvm:2.3.11")
 }

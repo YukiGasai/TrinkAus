@@ -22,7 +22,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import java.util.TreeMap
 
 data class HydrationHistoryEntry(
@@ -50,15 +49,19 @@ object HydrationHelper {
         context.startActivity(intent)
     }
 
-    suspend fun readHydrationLevel(context: Context): Double {
+    suspend fun readHydrationLevel(
+        context: Context,
+        date: LocalDate = LocalDate.now(),
+    ): Double {
         try {
-            val now = Instant.now().atZone(ZoneId.systemDefault())
-            val startOfDay = now.truncatedTo(ChronoUnit.DAYS).toInstant()
+            val zoneId = ZoneId.systemDefault()
+            val startOfDay = date.atStartOfDay(zoneId).toInstant()
+            val endOfDay = date.plusDays(1).atStartOfDay(zoneId).toInstant()
 
             val timeRangeFilter =
                 TimeRangeFilter.Companion.between(
                     startTime = startOfDay,
-                    endTime = now.toInstant(),
+                    endTime = endOfDay,
                 )
 
             val readRequest =

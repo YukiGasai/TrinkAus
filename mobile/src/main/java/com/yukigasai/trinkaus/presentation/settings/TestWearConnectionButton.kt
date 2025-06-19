@@ -126,6 +126,7 @@ fun TestWearConnectionButton(modifier: Modifier = Modifier) {
             Text(
                 text = stringResource(R.string.test_watch_connection),
                 style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center,
             )
         }
 

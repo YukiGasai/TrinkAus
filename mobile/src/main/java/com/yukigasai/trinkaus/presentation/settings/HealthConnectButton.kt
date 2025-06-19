@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.util.HydrationHelper
@@ -36,6 +37,7 @@ fun HealthConnectButton(modifier: Modifier = Modifier) {
     ) {
         Text(
             text = "Health Connect ${stringResource(R.string.settings)}",
+            textAlign = TextAlign.Center,
             style = MaterialTheme.typography.labelLarge,
         )
     }

@@ -265,6 +265,8 @@ fun SettingsPopup(
                     )
                 }
 
+                WaterServiceSettings()
+
                 OptionSection(
                     headerTitle = stringResource(R.string.general),
                 ) {

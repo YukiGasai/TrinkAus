@@ -58,4 +58,11 @@
     <string name="open_play_store">Play Store öffnen</string>
     <string name="share">Teilen</string>
     <string name="share_title">Teilen sie ihren Fortschritt mit Freunden!</string>
+    <string name="copy_text_title">Text kopiert</string>
+    <string name="copy_text_description">Text in die Zwischenablage kopiert</string>
+    <string name="authentication_token">Authentifizierungstoken</string>
+    <string name="ip_address">IP-Adresse</string>
+    <string name="local_api_server">Lokaler API Server</string>
+    <string name="unknown_error">Unbekannter Fehler</string>
+    <string name="failed_get_ip">Lokale IP konnte nicht gefunden werden</string>
 </resources>

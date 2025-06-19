@@ -13,6 +13,15 @@
 <!--    Permission to reschedule the notification Worker on Startup -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+
+    <!-- Required for the server to accept connections -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Required for the Foreground Service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+
 <!--    Required to get the Health Connect Data-->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -121,5 +130,11 @@
                 <data android:pathPrefix="/update_goal" />
             </intent-filter>
         </service>
+
+        <service
+            android:name=".service.WaterServerService"
+            android:foregroundServiceType="dataSync"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 </manifest>

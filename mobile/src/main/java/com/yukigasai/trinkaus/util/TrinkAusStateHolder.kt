@@ -92,6 +92,8 @@ class TrinkAusStateHolder(
             preferences[DataStoreKeys.USE_GRAPH_HISTORY] == true
         }
 
+    val showConfetti = mutableStateOf(false)
+
     @OptIn(FlowPreview::class)
     val largestStreak: StateFlow<StreakResult> =
         combine(
@@ -139,6 +141,7 @@ class TrinkAusStateHolder(
 
     fun addHydration(hydrationOption: HydrationOption) {
         isLoading.value = true
+        showConfetti.value = true
         CoroutineScope(Dispatchers.Main).launch {
             val amountToAdd = hydrationOption.getAmount(context)
             HydrationHelper.writeHydrationLevel(context, amountToAdd)

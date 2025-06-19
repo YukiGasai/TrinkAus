@@ -189,6 +189,7 @@ fun WaterIntakeItem(
             Text(
                 modifier = Modifier.padding(top = 8.dp),
                 text = hydrationOption.getDisplayName(context),
+                maxLines = 1,
                 style =
                     MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,

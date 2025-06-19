@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 
 object Constants {
     object DataStore {
@@ -24,6 +25,8 @@ object Constants {
             val SMALL_AMOUNT = intPreferencesKey("small_amount")
             val MEDIUM_AMOUNT = intPreferencesKey("medium_amount")
             val LARGE_AMOUNT = intPreferencesKey("large_amount")
+            val USE_LOCAL_SERVER = booleanPreferencesKey("use_local_server")
+            val AUTH_TOKEN = stringPreferencesKey("auth_token")
         }
     }
 
