@@ -35,15 +35,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.yukigasai.trinkaus.R
-import com.yukigasai.trinkaus.shared.UnitHelper
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import kotlin.math.ceil
 
 @Composable
@@ -56,6 +51,7 @@ fun HeatmapCalendar(
     emptyCellColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
     startColor: Color = MaterialTheme.colorScheme.primaryContainer,
     endColor: Color = MaterialTheme.colorScheme.primary,
+    onDayClick: (date: LocalDate, value: Double?) -> Unit,
     isLoading: Boolean = false,
 ) {
     val configuration = LocalConfiguration.current
@@ -70,7 +66,6 @@ fun HeatmapCalendar(
     val totalCellsInGrid = firstDayOfWeekOffset + daysInMonth
     val numRows = remember(totalCellsInGrid) { ceil(totalCellsInGrid / 7.0).toInt() }
     val gridHeight = remember(cellDimension, numRows) { cellDimension * numRows }
-    val selectedDate = remember { mutableStateOf<LocalDate?>(null) }
 
     if (isLoading) {
         Column(
@@ -88,44 +83,6 @@ fun HeatmapCalendar(
             )
         }
         return
-    }
-
-    selectedDate.value?.let { date ->
-        Dialog(
-            properties =
-                DialogProperties(
-                    dismissOnBackPress = true,
-                    dismissOnClickOutside = true,
-                    usePlatformDefaultWidth = true,
-                ),
-            onDismissRequest = { selectedDate.value = null },
-            content = {
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                shape = MaterialTheme.shapes.medium,
-                            ).padding(16.dp),
-                    horizontalAlignment = CenterHorizontally,
-                ) {
-                    Text(
-                        text = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = data[date]?.let { UnitHelper.getVolumeStringWithUnit(it) } ?: "No data",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            },
-        )
     }
 
     LazyVerticalGrid(
@@ -199,9 +156,7 @@ fun HeatmapCalendar(
                     emptyCellColor = emptyCellColor,
                     startColor = startColor,
                     endColor = endColor,
-                    onDayClick = { date, value ->
-                        selectedDate.value = date
-                    },
+                    onDayClick = onDayClick,
                     modifier =
                         Modifier
                             .size(animatedSize.value)

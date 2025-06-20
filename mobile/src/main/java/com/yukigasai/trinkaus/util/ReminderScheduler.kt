@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.work.WorkManager
 import com.yukigasai.trinkaus.service.AlarmReceiver
@@ -40,11 +41,19 @@ object ReminderScheduler {
         val triggerAtMillis = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(reminderIntervalMinutes.toLong())
         Log.d("Trinkaus", "Scheduling next alarm for $reminderIntervalMinutes minutes. Trigger time: ${java.util.Date(triggerAtMillis)}")
 
-        alarmManager.setAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            triggerAtMillis,
-            pendingIntent,
-        )
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent,
+            )
+        } else {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent,
+            )
+        }
     }
 
     fun stopReminders(context: Context) {

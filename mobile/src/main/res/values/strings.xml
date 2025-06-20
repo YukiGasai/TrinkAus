@@ -64,4 +64,5 @@
     <string name="local_api_server">Local API Server</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="failed_get_ip">Failed to get local IP Address</string>
+    <string name="add_water">Add water</string>
 </resources>

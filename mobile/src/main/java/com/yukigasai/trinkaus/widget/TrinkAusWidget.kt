@@ -79,6 +79,9 @@ fun GlanceModifier.widgetBackground(color: ColorProvider): GlanceModifier =
         )
     }
 
+/**
+ * Todo: Add layout support for different text sizes based on android settings
+ */
 class TrinkAusWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
@@ -310,11 +313,6 @@ class TrinkAusWidget : GlanceAppWidget() {
                         GlanceModifier
                             .padding(8.dp)
                             .clickable(actionRunCallback<RefreshActionCallback>()),
-//                            .clickable {
-//                            scope.launch(Dispatchers.IO) {
-//                                TrinkAusWidget().updateAll(context)
-//                            }
-//                        },
                 )
             }
         }

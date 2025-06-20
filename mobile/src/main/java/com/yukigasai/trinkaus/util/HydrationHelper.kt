@@ -105,6 +105,7 @@ object HydrationHelper {
     suspend fun writeHydrationLevel(
         context: Context,
         amount: Int,
+        date: LocalDate = LocalDate.now(),
     ) {
         val isMetric = UnitHelper.isMetric()
 
@@ -125,6 +126,10 @@ object HydrationHelper {
         }
 
         try {
+            val zoneOffset = ZoneOffset.systemDefault().rules.getOffset(date.atStartOfDay())
+            val startTime = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
+            val endTime = startTime.plusSeconds(60)
+
             val hydrationRecord =
                 HydrationRecord(
                     volume =
@@ -135,10 +140,10 @@ object HydrationHelper {
                                 amount.toDouble(),
                             )
                         },
-                    startTime = Instant.now().minusSeconds(60),
-                    endTime = Instant.now(),
-                    startZoneOffset = ZoneOffset.systemDefault().rules.getOffset(Instant.now()),
-                    endZoneOffset = ZoneOffset.systemDefault().rules.getOffset(Instant.now()),
+                    startTime = startTime,
+                    endTime = endTime,
+                    startZoneOffset = zoneOffset,
+                    endZoneOffset = zoneOffset,
                     metadata = Metadata.Companion.unknownRecordingMethodWithId("manual"),
                 )
             HealthConnectClient.Companion

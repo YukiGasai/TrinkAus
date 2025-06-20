@@ -20,6 +20,8 @@
     <!-- Required for the Foreground Service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- To get the fucking foreground service to start on Boot - Fuck Android -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
 
 <!--    Required to get the Health Connect Data-->
@@ -136,5 +138,10 @@
             android:foregroundServiceType="dataSync"
             android:enabled="true"
             android:exported="false" />
+
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
     </application>
 </manifest>

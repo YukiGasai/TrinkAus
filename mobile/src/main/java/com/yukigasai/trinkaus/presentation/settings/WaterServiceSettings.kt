@@ -1,9 +1,12 @@
 package com.yukigasai.trinkaus.presentation.settings
 
+import android.app.AlarmManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement.Absolute.SpaceBetween
@@ -28,13 +31,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.startActivity
 import androidx.datastore.preferences.core.edit
+import androidx.lifecycle.Lifecycle
 import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.service.WaterServerService
-import com.yukigasai.trinkaus.shared.Constants
+import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
+import com.yukigasai.trinkaus.util.OnLifecycleEvent
 import com.yukigasai.trinkaus.util.ServerManager
 import com.yukigasai.trinkaus.util.ServerManager.getServerUrl
+import com.yukigasai.trinkaus.util.ServerManager.startServer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -44,27 +52,60 @@ fun WaterServiceSettings(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val dataStore = DataStoreSingleton.getInstance(context)
     val scope = rememberCoroutineScope()
+    val requestedPermission = remember { mutableStateOf(false) }
+
+    fun isExactAlarmPermissionGranted(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return true
+        }
+        val alarmManager = getSystemService(context, AlarmManager::class.java) ?: return false
+        return alarmManager.canScheduleExactAlarms()
+    }
+
+    OnLifecycleEvent { _, event ->
+        if (event == Lifecycle.Event.ON_RESUME && requestedPermission.value) {
+            requestedPermission.value = false
+            if (isExactAlarmPermissionGranted()) {
+                scope.launch(Dispatchers.IO) {
+                    dataStore.edit { preferences ->
+                        preferences[DataStoreKeys.USE_LOCAL_SERVER] = true
+                    }
+                    startServer(context)
+                }
+            } else {
+                Toast
+                    .makeText(
+                        context,
+                        "Couldn't start server. Please allow exact alarm permission in settings.",
+                        Toast.LENGTH_LONG,
+                    ).show()
+            }
+        }
+    }
 
     val useLocalServer by dataStore.data
-        .map { it[Constants.DataStore.DataStoreKeys.USE_LOCAL_SERVER] == true }
+        .map { it[DataStoreKeys.USE_LOCAL_SERVER] == true }
         .collectAsState(initial = false)
 
     val authToken by dataStore.data
-        .map { it[Constants.DataStore.DataStoreKeys.AUTH_TOKEN] ?: "" }
+        .map { it[DataStoreKeys.AUTH_TOKEN] ?: "" }
         .collectAsState(initial = "")
 
     var serverIp by remember { mutableStateOf("") }
     var serverIpError by remember { mutableStateOf(false) }
 
     fun startServer() {
-        val serviceIntent = Intent(context, WaterServerService::class.java)
+        val serviceIntent =
+            Intent(context, WaterServerService::class.java).apply {
+                action = WaterServerService.ACTION_START
+            }
         context.startForegroundService(serviceIntent)
 
         scope.launch {
             val authToken =
                 dataStore.data
                     .firstOrNull()
-                    ?.get(Constants.DataStore.DataStoreKeys.AUTH_TOKEN)
+                    ?.get(DataStoreKeys.AUTH_TOKEN)
 
             if (authToken.isNullOrEmpty()) {
                 ServerManager.createOrRefreshAuthToken(context)
@@ -95,9 +136,15 @@ fun WaterServiceSettings(modifier: Modifier = Modifier) {
             Switch(
                 checked = useLocalServer,
                 onCheckedChange = { isChecked ->
-                    scope.launch {
+                    if (isChecked && !isExactAlarmPermissionGranted()) {
+                        requestedPermission.value = true
+                        context.startActivity(Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                        return@Switch
+                    }
+
+                    scope.launch(Dispatchers.IO) {
                         dataStore.edit { preferences ->
-                            preferences[Constants.DataStore.DataStoreKeys.USE_LOCAL_SERVER] = isChecked
+                            preferences[DataStoreKeys.USE_LOCAL_SERVER] = isChecked
                         }
                         if (isChecked) {
                             startServer()

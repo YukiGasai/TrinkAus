@@ -19,7 +19,7 @@ import java.time.YearMonth
 @Composable
 fun HydrationCalendar(stateHolder: TrinkAusStateHolder) {
     val isLoadingHistory = remember { mutableStateOf(false) }
-    val selectedDate = remember { stateHolder.selectedDate }
+    val selectedDate = remember { stateHolder.selectedHistoryDate }
     val maxValue = remember { mutableDoubleStateOf(0.0) }
     val historyData = remember { mutableStateOf<Map<LocalDate, Double>>(emptyMap()) }
     val scope = rememberCoroutineScope()
@@ -53,5 +53,13 @@ fun HydrationCalendar(stateHolder: TrinkAusStateHolder) {
         minValue = 0.0,
         maxValue = maxValue.doubleValue,
         isLoading = isLoadingHistory.value,
+        onDayClick = { date, _ ->
+            // If the selected date is in the future, reset to today
+            if (date.isAfter(LocalDate.now())) {
+                stateHolder.updateSelectedDate(LocalDate.now())
+            } else {
+                stateHolder.updateSelectedDate(date)
+            }
+        },
     )
 }

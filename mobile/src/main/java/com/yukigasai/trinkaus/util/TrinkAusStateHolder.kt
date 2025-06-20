@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -40,7 +41,10 @@ class TrinkAusStateHolder(
 ) {
     val scope = CoroutineScope(Dispatchers.IO)
     val isLoading = mutableStateOf(false)
-    val selectedDate = mutableStateOf(LocalDate.now())
+    val selectedHistoryDate = mutableStateOf(LocalDate.now())
+
+    private val pSelectedDate = mutableStateOf(LocalDate.now())
+    val selectedDate: State<LocalDate> get() = pSelectedDate
 
     val isMetric: Flow<Boolean> =
         dataStore.data.map { preferences ->
@@ -125,7 +129,7 @@ class TrinkAusStateHolder(
             )
 
     private suspend fun getHydrationData() {
-        val hydration = HydrationHelper.readHydrationLevel(context)
+        val hydration = HydrationHelper.readHydrationLevel(context, selectedDate.value)
         dataStore.edit { preferences ->
             preferences[DataStoreKeys.HYDRATION_LEVEL] = hydration
         }
@@ -139,12 +143,16 @@ class TrinkAusStateHolder(
         }
     }
 
-    fun addHydration(hydrationOption: HydrationOption) {
+    fun updateSelectedDate(newDate: LocalDate) {
+        pSelectedDate.value = newDate
+        refreshDataFromSource()
+    }
+
+    fun addHydration(amountToAdd: Int) {
         isLoading.value = true
         showConfetti.value = true
         CoroutineScope(Dispatchers.Main).launch {
-            val amountToAdd = hydrationOption.getAmount(context)
-            HydrationHelper.writeHydrationLevel(context, amountToAdd)
+            HydrationHelper.writeHydrationLevel(context, amountToAdd, pSelectedDate.value)
             getHydrationData()
 
             val currentLevel = hydrationLevel.firstOrNull() ?: 0.0
@@ -155,6 +163,13 @@ class TrinkAusStateHolder(
                 currentLevel,
             )
             isLoading.value = false
+        }
+    }
+
+    fun addHydration(hydrationOption: HydrationOption) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val amountToAdd = hydrationOption.getAmount(context)
+            addHydration(amountToAdd)
         }
     }
 

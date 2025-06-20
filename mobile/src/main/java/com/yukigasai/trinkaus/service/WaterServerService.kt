@@ -5,7 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.yukigasai.trinkaus.R
@@ -24,27 +27,66 @@ class WaterServerService : Service() {
         flags: Int,
         startId: Int,
     ): Int {
-        startForegroundService()
-        scope.launch {
-            startKtorServer()
+        if (intent?.action == ACTION_START) {
+            promoteToForeground()
+            scope.launch {
+                startKtorServer()
+            }
+        } else {
+            stopSelf()
         }
-        return START_STICKY
+
+        return START_NOT_STICKY
     }
 
     private fun startKtorServer() {
         ServerManager.startServer(this@WaterServerService)
     }
 
-    private fun startForegroundService() {
-        val channelId = "WaterIntakeServiceChannel"
-        val channel = NotificationChannel(channelId, "PC Sync Service", NotificationManager.IMPORTANCE_DEFAULT)
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
+    private fun promoteToForeground() {
+        val notification = createNotification(this@WaterServerService)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                1,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+            )
+        } else {
+            startForeground(1, notification)
+        }
+    }
 
-        val notification: Notification =
-            NotificationCompat
-                .Builder(this, channelId)
-                .setContentTitle("PC Sync Active")
+    override fun onDestroy() {
+        super.onDestroy()
+        ServerManager.stopServer()
+        job.cancel()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    companion object {
+        const val ACTION_START = "com.yukigasai.trinkaus.service.ACTION_START"
+
+        private fun createNotifcaionChannel(context: Context) {
+            val channelId = "WaterIntakeServiceChannel"
+            val channel =
+                NotificationChannel(
+                    channelId,
+                    "PC Sync Service",
+                    NotificationManager.IMPORTANCE_DEFAULT,
+                )
+            val manager = context.getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+
+        fun createNotification(
+            context: Context,
+            text: String = "PC Sync Active",
+        ): Notification {
+            createNotifcaionChannel(context)
+            return NotificationCompat
+                .Builder(context, "WaterIntakeServiceChannel")
+                .setContentTitle(text)
                 .setContentText("Listening for water intake data on port 8080.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
@@ -55,25 +97,15 @@ class WaterServerService : Service() {
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setStyle(NotificationCompat.BigTextStyle().bigText("Listening for water intake data on port 8080."))
                 .setContentIntent(
-                    // Open this
                     PendingIntent.getActivity(
-                        this,
+                        context,
                         0,
-                        Intent(this, WaterServerService::class.java).apply {
+                        Intent(context, WaterServerService::class.java).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         },
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                     ),
                 ).build()
-
-        startForeground(1, notification)
+        }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        ServerManager.stopServer()
-        job.cancel()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
 }

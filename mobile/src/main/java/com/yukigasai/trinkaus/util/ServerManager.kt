@@ -52,8 +52,11 @@ object ServerManager {
                         val result = validateRequest(context, call)
                         if (!result) return@get
 
+                        val date = getDateFromRequest(call)
+                        if (date == null) return@get
+
                         call.respondText(
-                            getHydration(context),
+                            getHydration(context, date),
                             contentType = ContentType.Application.Json,
                         )
                     }
@@ -70,24 +73,10 @@ object ServerManager {
                         val result = validateRequest(context, call)
                         if (!result) return@get
 
-                        val dateInMonthRaw = call.request.queryParameters["date"]
+                        val date = getDateFromRequest(call)
+                        if (date == null) return@get
 
-                        val dateInMonth =
-                            if (dateInMonthRaw != null) {
-                                try {
-                                    LocalDate.parse(dateInMonthRaw)
-                                } catch (e: Exception) {
-                                    call.respondText(
-                                        "{\"status\": \"error\", \"message\": \"Invalid date format use YYYY/MM/DD\"}",
-                                        contentType = ContentType.Application.Json,
-                                    )
-                                    return@get
-                                }
-                            } else {
-                                LocalDate.now()
-                            }
-
-                        val response = getHistoryForDate(context, dateInMonth)
+                        val response = getHistoryForDate(context, date)
                         call.respondText(
                             response,
                             contentType = ContentType.Application.Json,
@@ -96,6 +85,9 @@ object ServerManager {
                     post("/hydration") {
                         val result = validateRequest(context, call)
                         if (!result) return@post
+
+                        val date = getDateFromRequest(call)
+                        if (date == null) return@post
 
                         val hydration = call.request.queryParameters["hydration"]?.toIntOrNull()
                         if (hydration != null) {
@@ -217,6 +209,23 @@ object ServerManager {
         }
     }
 
+    private suspend fun getDateFromRequest(call: RoutingCall): LocalDate? {
+        val date =
+            call.request.queryParameters["date"]?.let {
+                try {
+                    LocalDate.parse(it)
+                } catch (e: Exception) {
+                    call.respondText(
+                        "{\"status\": \"error\", \"message\": \"Invalid date format use YYYY/MM/DD\"}",
+                        status = HttpStatusCode.BadRequest,
+                        contentType = ContentType.Application.Json,
+                    )
+                    return null
+                }
+            } ?: LocalDate.now()
+        return date
+    }
+
     private suspend fun getBaseSuccessResponse(context: Context): StringBuilder {
         val dataStore = DataStoreSingleton.getInstance(context)
         val isMetric = dataStore.data.first()[DataStoreKeys.IS_METRIC] == true
@@ -226,10 +235,13 @@ object ServerManager {
         return jsonBuilder
     }
 
-    private suspend fun getHydration(context: Context): String {
-        val hydration = HydrationHelper.readHydrationLevel(context)
+    private suspend fun getHydration(
+        context: Context,
+        date: LocalDate = LocalDate.now(),
+    ): String {
+        val hydration = HydrationHelper.readHydrationLevel(context, date)
         val jsonBuilder = getBaseSuccessResponse(context)
-        jsonBuilder.append("\"hydration\": $hydration")
+        jsonBuilder.append("\"hydration\": $hydration, \"date\": \"$date\"")
         jsonBuilder.append("}")
         return jsonBuilder.toString()
     }
@@ -246,11 +258,12 @@ object ServerManager {
     private suspend fun addHydration(
         context: Context,
         hydration: Int,
+        date: LocalDate = LocalDate.now(),
     ): String {
-        HydrationHelper.writeHydrationLevel(context, hydration)
-        val hydration = HydrationHelper.readHydrationLevel(context)
+        HydrationHelper.writeHydrationLevel(context, hydration, date)
+        val hydration = HydrationHelper.readHydrationLevel(context, date)
         val jsonBuilder = getBaseSuccessResponse(context)
-        jsonBuilder.append("\"hydration\": $hydration")
+        jsonBuilder.append("\"hydration\": $hydration, \"date\": \"$date\"")
         jsonBuilder.append("}")
         return jsonBuilder.toString()
     }

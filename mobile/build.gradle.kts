@@ -93,4 +93,6 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:3.1.3")
     implementation("io.ktor:ktor-server-netty-jvm:3.1.3")
     implementation("io.ktor:ktor-server-cors-jvm:2.3.11")
+
+    implementation("com.github.zj565061763:compose-wheel-picker:1.0.0-rc02")
 }

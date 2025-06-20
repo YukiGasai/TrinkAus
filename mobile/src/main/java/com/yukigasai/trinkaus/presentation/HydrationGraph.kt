@@ -71,7 +71,7 @@ fun HydrationGraph(
 ) {
     val isLoadingHistory = remember { mutableStateOf(false) }
     val graphData = remember { mutableStateListOf<Bars>() }
-    val selectedDate = remember { stateHolder.selectedDate }
+    val selectedDate = remember { stateHolder.selectedHistoryDate }
     val maxValue = remember { mutableDoubleStateOf(0.0) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current

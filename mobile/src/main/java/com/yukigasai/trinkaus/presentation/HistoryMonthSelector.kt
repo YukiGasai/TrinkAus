@@ -41,7 +41,7 @@ fun HistoryMonthSelector(
     stateHolder: TrinkAusStateHolder,
     modifier: Modifier = Modifier,
 ) {
-    val selectedDate = remember { stateHolder.selectedDate }
+    val selectedDate = remember { stateHolder.selectedHistoryDate }
     val showDatePickerDialog = remember { mutableStateOf(false) }
     val datePickerState =
         rememberDatePickerState(

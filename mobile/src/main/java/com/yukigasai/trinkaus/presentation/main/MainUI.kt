@@ -1,6 +1,5 @@
 package com.yukigasai.trinkaus.presentation.main
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -99,12 +98,10 @@ fun MainUI(
                 Spacer(modifier = Modifier.height(spacing))
 
                 CurrentHydrationDisplay(
-                    hydrationLevel = hydrationLevel.value,
-                    hydrationGoal = hydrationGoal.value,
-                    modifier =
-                        Modifier.clickable {
-                            showAddWaterModal.value = true
-                        },
+                    stateHolder = stateHolder,
+                    onClick = {
+                        showAddWaterModal.value = true
+                    },
                 )
 
                 if (hydrationGoal.value > 0) {

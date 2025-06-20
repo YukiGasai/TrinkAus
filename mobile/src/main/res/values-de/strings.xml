@@ -65,4 +65,5 @@
     <string name="local_api_server">Lokaler API Server</string>
     <string name="unknown_error">Unbekannter Fehler</string>
     <string name="failed_get_ip">Lokale IP konnte nicht gefunden werden</string>
+    <string name="add_water">Wasser hinzufügen</string>
 </resources>
