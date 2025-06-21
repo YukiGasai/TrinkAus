@@ -52,6 +52,7 @@ object HydrationHelper {
     suspend fun readHydrationLevel(
         context: Context,
         date: LocalDate = LocalDate.now(),
+        readOnly: Boolean = false,
     ): Double {
         try {
             val zoneId = ZoneId.systemDefault()
@@ -90,9 +91,11 @@ object HydrationHelper {
                         }
                 }
 
-            val dataStore = DataStoreSingleton.getInstance(context)
-            dataStore.edit { preferences ->
-                preferences[DataStoreKeys.HYDRATION_LEVEL] = waterLevel
+            if (!readOnly) {
+                val dataStore = DataStoreSingleton.getInstance(context)
+                dataStore.edit { preferences ->
+                    preferences[DataStoreKeys.HYDRATION_LEVEL] = waterLevel
+                }
             }
 
             return waterLevel

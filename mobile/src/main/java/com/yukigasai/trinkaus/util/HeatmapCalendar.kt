@@ -47,11 +47,11 @@ fun HeatmapCalendar(
     data: Map<LocalDate, Double>,
     minValue: Double,
     maxValue: Double,
+    onDayClick: (date: LocalDate, value: Double?) -> Unit,
     modifier: Modifier = Modifier,
     emptyCellColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
     startColor: Color = MaterialTheme.colorScheme.primaryContainer,
     endColor: Color = MaterialTheme.colorScheme.primary,
-    onDayClick: (date: LocalDate, value: Double?) -> Unit,
     isLoading: Boolean = false,
 ) {
     val configuration = LocalConfiguration.current

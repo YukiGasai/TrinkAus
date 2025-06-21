@@ -13,14 +13,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NotificationStarter : BroadcastReceiver() {
-    private val TAG = "NotificationStarter"
+    private val tag = "NotificationStarter"
 
     override fun onReceive(
         context: Context,
         intent: Intent,
     ) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            Log.d(TAG, "BOOT_COMPLETED received.")
+            Log.d(tag, "BOOT_COMPLETED received.")
 
             // Tell the system we are doing async work
             val pendingResult: PendingResult = goAsync()
@@ -28,7 +28,7 @@ class NotificationStarter : BroadcastReceiver() {
             // You can use a predefined scope or launch a new one
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    Log.d(TAG, "Starting async work in BroadcastReceiver.")
+                    Log.d(tag, "Starting async work in BroadcastReceiver.")
                     scheduleMidnightUpdate(context)
                     ReminderScheduler.startOrRescheduleReminders(context)
 
@@ -60,7 +60,7 @@ class NotificationStarter : BroadcastReceiver() {
                                     triggerAtMillis,
                                     pendingIntent,
                                 )
-                                Log.d(TAG, "Exact alarm scheduled to start service in 15 seconds.")
+                                Log.d(tag, "Exact alarm scheduled to start service in 15 seconds.")
                             } else {
                                 // Fallback for when exact alarms are not permitted
                                 alarmManager.setAndAllowWhileIdle(
@@ -68,15 +68,15 @@ class NotificationStarter : BroadcastReceiver() {
                                     triggerAtMillis,
                                     pendingIntent,
                                 )
-                                Log.d(TAG, "Standard alarm scheduled to start service in 15 seconds.")
+                                Log.d(tag, "Standard alarm scheduled to start service in 15 seconds.")
                             }
                         } catch (se: SecurityException) {
-                            Log.e(TAG, "Could not schedule alarm. Is SCHEDULE_EXACT_ALARM permission granted?", se)
+                            Log.e(tag, "Could not schedule alarm. Is SCHEDULE_EXACT_ALARM permission granted?", se)
                         }
                     }
                 } finally {
                     // CRITICAL: Always call finish() when you're done.
-                    Log.d(TAG, "Async work finished, releasing receiver.")
+                    Log.d(tag, "Async work finished, releasing receiver.")
                     pendingResult.finish()
                 }
             }

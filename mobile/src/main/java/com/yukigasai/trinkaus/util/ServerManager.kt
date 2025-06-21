@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
+import com.yukigasai.trinkaus.shared.HydrationOption
+import com.yukigasai.trinkaus.shared.getDefaultAmount
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -43,11 +45,21 @@ object ServerManager {
                     anyHost()
                     allowHeader(HttpHeaders.ContentType)
                     allowHeader(HttpHeaders.Authorization)
+                    allowHeader(HttpHeaders.AccessControlAllowOrigin)
                     allowMethod(HttpMethod.Get)
                     allowMethod(HttpMethod.Post)
-                    allowMethod(HttpMethod.Options)
+                    allowSameOrigin = true
                 }
                 routing {
+                    get("/unit") {
+                        val result = validateRequest(context, call)
+                        if (!result) return@get
+
+                        call.respondText(
+                            getUnit(context),
+                            contentType = ContentType.Application.Json,
+                        )
+                    }
                     get("/hydration") {
                         val result = validateRequest(context, call)
                         if (!result) return@get
@@ -69,6 +81,27 @@ object ServerManager {
                             contentType = ContentType.Application.Json,
                         )
                     }
+
+                    get("/streaks") {
+                        val result = validateRequest(context, call)
+                        if (!result) return@get
+
+                        call.respondText(
+                            getStreaks(context),
+                            contentType = ContentType.Application.Json,
+                        )
+                    }
+
+                    get("/addHydrationAmounts") {
+                        val result = validateRequest(context, call)
+                        if (!result) return@get
+
+                        call.respondText(
+                            getAddHydrationAmounts(context),
+                            contentType = ContentType.Application.Json,
+                        )
+                    }
+
                     get("/history") {
                         val result = validateRequest(context, call)
                         if (!result) return@get
@@ -92,14 +125,14 @@ object ServerManager {
                         val hydration = call.request.queryParameters["hydration"]?.toIntOrNull()
                         if (hydration != null) {
                             // Save hydration level to DataStore
-                            val response = addHydration(context, hydration)
+                            val response = addHydration(context, hydration, date)
                             call.respondText(
                                 response,
                                 contentType = ContentType.Application.Json,
                             )
                         } else {
                             call.respondText(
-                                "{\"status\": \"error\", \"message\": \"Invalid hydration value\"}",
+                                "\"message\": \"Invalid hydration value\"}",
                                 contentType = ContentType.Application.Json,
                             )
                         }
@@ -117,7 +150,7 @@ object ServerManager {
                             )
                         } else {
                             call.respondText(
-                                "{\"status\": \"error\", \"message\": \"Invalid goal value\"}",
+                                "{\"message\": \"Invalid goal value\"}",
                                 contentType = ContentType.Application.Json,
                             )
                         }
@@ -196,10 +229,10 @@ object ServerManager {
     ): Boolean {
         val dataStore = DataStoreSingleton.getInstance(context)
         val storedAuthToken = dataStore.data.first()[DataStoreKeys.AUTH_TOKEN]
-        val authToken = call.request.headers["Authorization"]
+        val authToken = call.queryParameters["token"]
         if (storedAuthToken != authToken || authToken.isNullOrEmpty() || storedAuthToken.isNullOrEmpty()) {
             call.respondText(
-                "{\"status\": \"error\", \"message\": \"Invalid or missing auth token\"}",
+                "{\"message\": \"Invalid or missing auth token\"}",
                 contentType = ContentType.Application.Json,
                 status = HttpStatusCode.Unauthorized,
             )
@@ -216,7 +249,7 @@ object ServerManager {
                     LocalDate.parse(it)
                 } catch (e: Exception) {
                     call.respondText(
-                        "{\"status\": \"error\", \"message\": \"Invalid date format use YYYY/MM/DD\"}",
+                        "{\"message\": \"Invalid date format use YYYY-MM-DD\"}",
                         status = HttpStatusCode.BadRequest,
                         contentType = ContentType.Application.Json,
                     )
@@ -226,33 +259,53 @@ object ServerManager {
         return date
     }
 
-    private suspend fun getBaseSuccessResponse(context: Context): StringBuilder {
+    private suspend fun getUnit(context: Context): String {
         val dataStore = DataStoreSingleton.getInstance(context)
-        val isMetric = dataStore.data.first()[DataStoreKeys.IS_METRIC] == true
-
-        val jsonBuilder = StringBuilder()
-        jsonBuilder.append("{\"status\": \"success\", \"isMetric\": \"$isMetric\", ")
-        return jsonBuilder
+        val isMetric = dataStore.data.first()[DataStoreKeys.IS_METRIC] != false
+        return "{\"isMetric\": $isMetric }"
     }
 
     private suspend fun getHydration(
         context: Context,
         date: LocalDate = LocalDate.now(),
     ): String {
-        val hydration = HydrationHelper.readHydrationLevel(context, date)
-        val jsonBuilder = getBaseSuccessResponse(context)
-        jsonBuilder.append("\"hydration\": $hydration, \"date\": \"$date\"")
-        jsonBuilder.append("}")
-        return jsonBuilder.toString()
+        val hydration = HydrationHelper.readHydrationLevel(context, date, readOnly = true)
+        return "{\"hydration\": $hydration }"
     }
 
     private suspend fun getGoal(context: Context): String {
         val dataStore = DataStoreSingleton.getInstance(context)
         val goal = dataStore.data.first()[DataStoreKeys.HYDRATION_GOAL] ?: 2.0
-        val jsonBuilder = getBaseSuccessResponse(context)
-        jsonBuilder.append("\"goal\": $goal")
-        jsonBuilder.append("}")
-        return jsonBuilder.toString()
+        return "{\"goal\": $goal }"
+    }
+
+    private suspend fun getAddHydrationAmounts(context: Context): String {
+        val dataStore = DataStoreSingleton.getInstance(context)
+        val data = dataStore.data.first()
+        val small = data[DataStoreKeys.SMALL_AMOUNT] ?: HydrationOption.SMALL.getDefaultAmount()
+        val medium = data[DataStoreKeys.MEDIUM_AMOUNT] ?: HydrationOption.MEDIUM.getDefaultAmount()
+        val large = data[DataStoreKeys.LARGE_AMOUNT] ?: HydrationOption.LARGE.getDefaultAmount()
+        return "{\"small\": $small, \"medium\": $medium, \"large\": $large }"
+    }
+
+    private suspend fun getStreaks(context: Context): String {
+        val dataStore = DataStoreSingleton.getInstance(context)
+        val goal = dataStore.data.first()[DataStoreKeys.HYDRATION_GOAL] ?: 2.0
+        val longestStreak = HydrationHelper.getLongestWaterIntakeStreak(context, goal)
+        val currentStreak = HydrationHelper.getCurrentWaterIntakeStreakLength(context, goal)
+
+        return """
+            {
+                "longestStreak": {
+                    "length": ${longestStreak.length}
+                    ${if (longestStreak.startDate != null) ",\"startDate\": \"${longestStreak.startDate}\"" else ""}
+                },
+                "currentStreak": {
+                    "length": ${currentStreak.length}
+                     ${if (currentStreak.startDate != null) ",\"startDate\": \"${currentStreak.startDate}\"" else ""}
+                }
+            }
+            """.trimIndent()
     }
 
     private suspend fun addHydration(
@@ -261,11 +314,8 @@ object ServerManager {
         date: LocalDate = LocalDate.now(),
     ): String {
         HydrationHelper.writeHydrationLevel(context, hydration, date)
-        val hydration = HydrationHelper.readHydrationLevel(context, date)
-        val jsonBuilder = getBaseSuccessResponse(context)
-        jsonBuilder.append("\"hydration\": $hydration, \"date\": \"$date\"")
-        jsonBuilder.append("}")
-        return jsonBuilder.toString()
+        val hydration = HydrationHelper.readHydrationLevel(context, date, readOnly = true)
+        return "{\"hydration\": $hydration }"
     }
 
     private suspend fun updateGoal(
@@ -276,10 +326,7 @@ object ServerManager {
         dataStore.edit { preferences ->
             preferences[DataStoreKeys.HYDRATION_GOAL] = goal
         }
-        val jsonBuilder = getBaseSuccessResponse(context)
-        jsonBuilder.append("\"goal\": $goal")
-        jsonBuilder.append("}")
-        return jsonBuilder.toString()
+        return "{\"goal\": $goal }"
     }
 
     private suspend fun getHistoryForDate(
@@ -287,8 +334,8 @@ object ServerManager {
         dateInMonth: LocalDate,
     ): String {
         val data = HydrationHelper.getHydrationHistoryForMonth(context, dateInMonth)
-        val jsonBuilder = getBaseSuccessResponse(context)
-        jsonBuilder.append("\"history\": {")
+        val jsonBuilder = StringBuilder()
+        jsonBuilder.append("{\"history\": {")
         data.entries.forEachIndexed { index, entry ->
             jsonBuilder.append("\"${entry.key}\": ${entry.value}")
             if (index < data.size - 1) {
