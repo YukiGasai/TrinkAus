@@ -117,14 +117,6 @@ jobs:
           release_name: Release ${{ github.ref_name }}
           body: |
             Release of version ${{ github.ref_name }}.
-
-            **Google Play Store (Internal Track Links):**
-            *   Mobile App: ${{ steps.upload_mobile_play.outputs.downloadUrl || 'Play Store upload pending or link not available.' }}
-            *   Wear OS App: ${{ steps.upload_wear_play.outputs.downloadUrl || 'Play Store upload pending or link not available.' }}
-
-
-            DM me if you would like to join the internal testing track for the app.
-
             APKs and AABs are attached below for direct download or sideloading.
           draft: false
           prerelease: false
@@ -139,6 +131,17 @@ jobs:
           asset_path: ${{ steps.sign_mobile_apk.outputs.signedReleaseFile }}
           asset_name: trinkaus-mobile.apk
           asset_content_type: application/vnd.android.package-archive
+
+
+      - name: Upload Rainmeter Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_gh_release.outputs.upload_url }}
+          asset_path: TrinkAusSkin.rmskin
+          asset_name: TrinkAusSkin.rmskin
+          asset_content_type: application/gzip
 
       - name: Upload Wear OS APK to GitHub Release
         uses: actions/upload-release-asset@v1

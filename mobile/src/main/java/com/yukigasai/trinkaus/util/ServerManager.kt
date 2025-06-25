@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.edit
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.HydrationOption
+import com.yukigasai.trinkaus.shared.UnitHelper
 import com.yukigasai.trinkaus.shared.getDefaultAmount
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -269,14 +270,23 @@ object ServerManager {
         context: Context,
         date: LocalDate = LocalDate.now(),
     ): String {
-        val hydration = HydrationHelper.readHydrationLevel(context, date, readOnly = true)
-        return "{\"hydration\": $hydration }"
+        var hydration = HydrationHelper.readHydrationLevel(context, date, readOnly = true)
+
+        if (UnitHelper.isMetric()) {
+            hydration = hydration * 1000
+        }
+
+        return "{\"hydration\": ${hydration.toInt()} }"
     }
 
     private suspend fun getGoal(context: Context): String {
         val dataStore = DataStoreSingleton.getInstance(context)
-        val goal = dataStore.data.first()[DataStoreKeys.HYDRATION_GOAL] ?: 2.0
-        return "{\"goal\": $goal }"
+        var goal = dataStore.data.first()[DataStoreKeys.HYDRATION_GOAL] ?: 2.0
+        if (UnitHelper.isMetric()) {
+            goal = goal * 1000
+        }
+
+        return "{\"goal\": ${goal.toInt()} }"
     }
 
     private suspend fun getAddHydrationAmounts(context: Context): String {
@@ -314,8 +324,13 @@ object ServerManager {
         date: LocalDate = LocalDate.now(),
     ): String {
         HydrationHelper.writeHydrationLevel(context, hydration, date)
-        val hydration = HydrationHelper.readHydrationLevel(context, date, readOnly = true)
-        return "{\"hydration\": $hydration }"
+        var hydration = HydrationHelper.readHydrationLevel(context, date, readOnly = true)
+
+        if (UnitHelper.isMetric()) {
+            hydration = hydration * 1000
+        }
+
+        return "{\"hydration\": ${hydration.toInt()} }"
     }
 
     private suspend fun updateGoal(
@@ -335,9 +350,18 @@ object ServerManager {
     ): String {
         val data = HydrationHelper.getHydrationHistoryForMonth(context, dateInMonth)
         val jsonBuilder = StringBuilder()
+
+        val isMetric = UnitHelper.isMetric()
+
         jsonBuilder.append("{\"history\": {")
         data.entries.forEachIndexed { index, entry ->
-            jsonBuilder.append("\"${entry.key}\": ${entry.value}")
+
+            var hydration = entry.value
+            if (isMetric) {
+                hydration = entry.value * 1000
+            }
+
+            jsonBuilder.append("\"${entry.key}\": ${hydration.toInt()}")
             if (index < data.size - 1) {
                 jsonBuilder.append(", ")
             }

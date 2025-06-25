@@ -4,7 +4,7 @@ import { Box, IconButton, CircularProgress, Stack, Typography } from "@mui/mater
 import { subDays, isToday, addDays } from "date-fns";
 import { currentDate, currentHydration, hydrationGoal } from "../../helper/signals";
 import { AppDarkTheme } from "../../helper/theme";
-import { dateToDisplayString, displayLargeNumber, getUnitStringLargeWithValue } from "../../helper/unitHelper";
+import { dateToDisplayString, getUnitStringLargeWithValue } from "../../helper/unitHelper";
 import { CircularProgressWithGap } from "../CircularProgressWithGap";
 
 export const HydrationDisplay = (
@@ -51,7 +51,7 @@ export const HydrationDisplay = (
                             color="primary"
                             sx={{ lineHeight: 0.8 }}
                         >
-                            {displayLargeNumber(currentHydration.value || 0)}
+                            {getUnitStringLargeWithValue(currentHydration.value || 0)}
                         </Typography>
 
                         <Typography variant="h5" color="text.secondary">

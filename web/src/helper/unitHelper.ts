@@ -13,7 +13,11 @@ export function getUnitStringWithValue(value: number): string {
 }
 
 export function getUnitStringLargeWithValue(value: number): string {
-    return `${displayNumber(value)} ${getUnitStringLarge()}`;
+    if (!isMetric.value) {
+        return `${displayNumber(value)} oz`;
+    }
+
+    return `${displayNumber(value / 1000)} ${getUnitStringLarge()}`;
 }
 
 export function displayLargeNumber(number: number): string {

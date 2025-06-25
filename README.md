@@ -94,6 +94,7 @@ This project is licensed under the [MIT License](./LICENSE) - see the LICENSE fi
 
 - Icons from [Lucide](https://lucide.dev/)
 - Notification Sound from [pickanothername](https://freesound.org/people/pickanothername/sounds/592594/)
+- [Cold](https://www.deviantart.com/gfwwf/art/COLD-rainmeter-skin-833394700) Rainmeter Skin for inspiration
 
 ---
 

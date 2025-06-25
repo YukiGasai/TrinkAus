@@ -90,9 +90,9 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
 
-    implementation("io.ktor:ktor-server-core-jvm:3.1.3")
-    implementation("io.ktor:ktor-server-netty-jvm:3.1.3")
-    implementation("io.ktor:ktor-server-cors-jvm:2.3.11")
+    implementation(libs.ktor.server.core.jvm)
+    implementation(libs.ktor.server.netty.jvm)
+    implementation(libs.ktor.server.cors.jvm)
 
-    implementation("com.github.zj565061763:compose-wheel-picker:1.0.0-rc02")
+    implementation(libs.compose.wheel.picker)
 }

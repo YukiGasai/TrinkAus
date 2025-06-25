@@ -1,10 +1,14 @@
 [versions]
 agp = "8.7.3"
+composeWheelPicker = "1.0.0-rc02"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
 activity = "1.10.1"
 constraintlayout = "2.2.1"
+ktorServerCoreJvm = "3.1.3"
+ktorServerCorsJvm = "2.3.11"
+ktorServerNettyJvm = "3.1.3"
 workRuntimeKtx = "2.10.1"
 coreSplashscreen = "1.0.1"
 datastorePreferences = "1.1.7"
@@ -43,6 +47,7 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-connect-client = { module = "androidx.health.connect:connect-client", version.ref = "connectClient" }
+compose-wheel-picker = { module = "com.github.zj565061763:compose-wheel-picker", version.ref = "composeWheelPicker" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 
 # --- COMPOSE ---
@@ -63,6 +68,9 @@ androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidge
 androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 # --- WEAR OS ---
+ktor-server-core-jvm = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktorServerCoreJvm" }
+ktor-server-cors-jvm = { module = "io.ktor:ktor-server-cors-jvm", version.ref = "ktorServerCorsJvm" }
+ktor-server-netty-jvm = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktorServerNettyJvm" }
 play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
 androidx-wear-tooling-preview = { group = "androidx.wear", name = "wear-tooling-preview", version.ref = "wearToolingPreview" }
 androidx-tiles = { group = "androidx.wear.tiles", name = "tiles", version.ref = "tiles" }
