@@ -5,6 +5,7 @@ import androidx.glance.appwidget.updateAll
 import androidx.health.connect.client.HealthConnectClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
+import com.yukigasai.trinkaus.service.WaterServerService.Companion.triggerNotificationUpdate
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
@@ -75,6 +76,8 @@ class CompanionMessageService : WearableListenerService() {
                         Constants.Path.UPDATE_HYDRATION,
                         newHydration.toString(),
                     )
+
+                    triggerNotificationUpdate(this@CompanionMessageService)
 
                     TrinkAusWidget().updateAll(this@CompanionMessageService)
                 }

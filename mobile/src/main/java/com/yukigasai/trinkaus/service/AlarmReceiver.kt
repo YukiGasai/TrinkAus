@@ -25,12 +25,11 @@ class AlarmReceiver : BroadcastReceiver() {
         intent: Intent?,
     ) {
         if (intent?.action == "START_FOREGROUND_SERVICE") {
-            val serviceIntent =
+            val intent =
                 Intent(context, WaterServerService::class.java).apply {
                     action = WaterServerService.ACTION_START
                 }
-            context.startForegroundService(serviceIntent)
-            return
+            context.startForegroundService(intent)
         }
 
         Log.d("Trinkaus", "AlarmReceiver: Triggered.")

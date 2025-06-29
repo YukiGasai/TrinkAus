@@ -2,11 +2,15 @@ package com.yukigasai.trinkaus.util
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.glance.appwidget.updateAll
+import com.yukigasai.trinkaus.service.WaterServerService.Companion.triggerNotificationUpdate
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.DataStoreSingleton
 import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.UnitHelper
+import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getDefaultAmount
+import com.yukigasai.trinkaus.widget.TrinkAusWidget
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -22,10 +26,15 @@ import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.time.LocalDate
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Important TODO
@@ -34,138 +43,170 @@ import java.time.LocalDate
  *      - Without this, everyone in the local network can find the authToken
  */
 object ServerManager {
-    private var ktorServer: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
+    private val ktorServer = AtomicReference<EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>?>(null)
+    private val serverMutex = Mutex()
 
     const val PORT = 8372
 
-    fun startServer(context: Context) {
-        if (ktorServer != null) return
-        ktorServer =
-            embeddedServer(Netty, port = PORT) {
-                install(CORS) {
-                    anyHost()
-                    allowHeader(HttpHeaders.ContentType)
-                    allowHeader(HttpHeaders.Authorization)
-                    allowHeader(HttpHeaders.AccessControlAllowOrigin)
-                    allowMethod(HttpMethod.Get)
-                    allowMethod(HttpMethod.Post)
-                    allowSameOrigin = true
+    fun isRunning(): Boolean = ktorServer.get() != null
+
+    suspend fun startServer(context: Context): Result<Unit> =
+        serverMutex.withLock {
+            withContext(Dispatchers.IO) {
+                if (isRunning()) {
+                    println("Server is already running.")
+                    return@withContext Result.success(Unit)
                 }
-                routing {
-                    get("/unit") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@get
 
-                        call.respondText(
-                            getUnit(context),
-                            contentType = ContentType.Application.Json,
-                        )
-                    }
-                    get("/hydration") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@get
+                try {
+                    val server =
+                        embeddedServer(Netty, port = PORT, host = "0.0.0.0") {
+                            install(CORS) {
+                                anyHost()
+                                allowHeader(HttpHeaders.ContentType)
+                                allowHeader(HttpHeaders.Authorization)
+                                allowHeader(HttpHeaders.AccessControlAllowOrigin)
+                                allowMethod(HttpMethod.Get)
+                                allowMethod(HttpMethod.Post)
+                                allowSameOrigin = true
+                            }
+                            routing {
+                                get("/unit") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@get
 
-                        val date = getDateFromRequest(call)
-                        if (date == null) return@get
+                                    call.respondText(
+                                        getUnit(context),
+                                        contentType = ContentType.Application.Json,
+                                    )
+                                }
+                                get("/hydration") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@get
 
-                        call.respondText(
-                            getHydration(context, date),
-                            contentType = ContentType.Application.Json,
-                        )
-                    }
-                    get("/goal") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@get
+                                    val date = getDateFromRequest(call)
+                                    if (date == null) return@get
 
-                        call.respondText(
-                            getGoal(context),
-                            contentType = ContentType.Application.Json,
-                        )
-                    }
+                                    call.respondText(
+                                        getHydration(context, date),
+                                        contentType = ContentType.Application.Json,
+                                    )
+                                }
+                                get("/goal") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@get
 
-                    get("/streaks") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@get
+                                    call.respondText(
+                                        getGoal(context),
+                                        contentType = ContentType.Application.Json,
+                                    )
+                                }
 
-                        call.respondText(
-                            getStreaks(context),
-                            contentType = ContentType.Application.Json,
-                        )
-                    }
+                                get("/streaks") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@get
 
-                    get("/addHydrationAmounts") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@get
+                                    call.respondText(
+                                        getStreaks(context),
+                                        contentType = ContentType.Application.Json,
+                                    )
+                                }
 
-                        call.respondText(
-                            getAddHydrationAmounts(context),
-                            contentType = ContentType.Application.Json,
-                        )
-                    }
+                                get("/addHydrationAmounts") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@get
 
-                    get("/history") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@get
+                                    call.respondText(
+                                        getAddHydrationAmounts(context),
+                                        contentType = ContentType.Application.Json,
+                                    )
+                                }
 
-                        val date = getDateFromRequest(call)
-                        if (date == null) return@get
+                                get("/history") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@get
 
-                        val response = getHistoryForDate(context, date)
-                        call.respondText(
-                            response,
-                            contentType = ContentType.Application.Json,
-                        )
-                    }
-                    post("/hydration") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@post
+                                    val date = getDateFromRequest(call)
+                                    if (date == null) return@get
 
-                        val date = getDateFromRequest(call)
-                        if (date == null) return@post
+                                    val response = getHistoryForDate(context, date)
+                                    call.respondText(
+                                        response,
+                                        contentType = ContentType.Application.Json,
+                                    )
+                                }
+                                post("/hydration") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@post
 
-                        val hydration = call.request.queryParameters["hydration"]?.toIntOrNull()
-                        if (hydration != null) {
-                            // Save hydration level to DataStore
-                            val response = addHydration(context, hydration, date)
-                            call.respondText(
-                                response,
-                                contentType = ContentType.Application.Json,
-                            )
-                        } else {
-                            call.respondText(
-                                "\"message\": \"Invalid hydration value\"}",
-                                contentType = ContentType.Application.Json,
-                            )
-                        }
-                    }
-                    post("/goal") {
-                        val result = validateRequest(context, call)
-                        if (!result) return@post
+                                    val date = getDateFromRequest(call)
+                                    if (date == null) return@post
 
-                        val goal = call.request.queryParameters["goal"]?.toDoubleOrNull()
-                        if (goal != null) {
-                            val response = updateGoal(context, goal)
-                            call.respondText(
-                                response,
-                                contentType = ContentType.Application.Json,
-                            )
-                        } else {
-                            call.respondText(
-                                "{\"message\": \"Invalid goal value\"}",
-                                contentType = ContentType.Application.Json,
-                            )
-                        }
+                                    val hydration =
+                                        call.request.queryParameters["hydration"]?.toIntOrNull()
+                                    if (hydration != null) {
+                                        // Save hydration level to DataStore
+                                        val response = addHydration(context, hydration, date)
+                                        call.respondText(
+                                            response,
+                                            contentType = ContentType.Application.Json,
+                                        )
+                                    } else {
+                                        call.respondText(
+                                            "\"message\": \"Invalid hydration value\"}",
+                                            contentType = ContentType.Application.Json,
+                                        )
+                                    }
+                                }
+                                post("/goal") {
+                                    val result = validateRequest(context, call)
+                                    if (!result) return@post
+
+                                    val goal = call.request.queryParameters["goal"]?.toDoubleOrNull()
+                                    if (goal != null) {
+                                        val response = updateGoal(context, goal)
+                                        call.respondText(
+                                            response,
+                                            contentType = ContentType.Application.Json,
+                                        )
+                                    } else {
+                                        call.respondText(
+                                            "{\"message\": \"Invalid goal value\"}",
+                                            contentType = ContentType.Application.Json,
+                                        )
+                                    }
+                                }
+                            }
+                        }.start(wait = false)
+
+                    ktorServer.set(server)
+                    println("Server started successfully on port $PORT")
+                    triggerNotificationUpdate(context)
+                    Result.success(Unit)
+                } catch (e: Exception) {
+                    println("Error starting server: ${e.message}")
+                    e.printStackTrace()
+                    ktorServer.set(null)
+                    Result.failure(e)
+                }
+            }
+        }
+
+    suspend fun stopServer() =
+        serverMutex.withLock {
+            withContext(Dispatchers.IO) {
+                val server = ktorServer.getAndSet(null)
+                if (server != null) {
+                    println("Stopping server...")
+                    try {
+                        server.stop(1000, 2000)
+                        println("Server stopped.")
+                    } catch (e: Exception) {
+                        println("Error stopping server: ${e.message}")
                     }
                 }
-            }.start(wait = false)
-
-        println("Server started!")
-    }
-
-    fun stopServer() {
-        ktorServer?.stop(1000, 2000)
-        ktorServer = null
-    }
+            }
+        }
 
     suspend fun isEnabled(context: Context): Boolean {
         val dataStore = DataStoreSingleton.getInstance(context)
@@ -326,9 +367,24 @@ object ServerManager {
         HydrationHelper.writeHydrationLevel(context, hydration, date)
         var hydration = HydrationHelper.readHydrationLevel(context, date, readOnly = true)
 
+        if (date == LocalDate.now()) {
+            val dataStore = DataStoreSingleton.getInstance(context)
+            dataStore.edit { preferences ->
+                preferences[DataStoreKeys.HYDRATION_LEVEL] = hydration
+            }
+        }
+
         if (UnitHelper.isMetric()) {
             hydration = hydration * 1000
         }
+
+        triggerNotificationUpdate(context)
+        WearableMessenger.sendMessage(
+            context,
+            com.yukigasai.trinkaus.shared.Constants.Path.UPDATE_HYDRATION,
+            hydration,
+        )
+        TrinkAusWidget().updateAll(context)
 
         return "{\"hydration\": ${hydration.toInt()} }"
     }

@@ -51,5 +51,6 @@ object Constants {
         const val ADD_SMALL = "ADD_SMALL"
         const val ADD_MEDIUM = "ADD_MEDIUM"
         const val ADD_LARGE = "ADD_LARGE"
+        const val ACTION_COPY_IP = "ACTION_COPY_IP"
     }
 }

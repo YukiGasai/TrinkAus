@@ -70,7 +70,11 @@ fun WaterServiceSettings(modifier: Modifier = Modifier) {
                     dataStore.edit { preferences ->
                         preferences[DataStoreKeys.USE_LOCAL_SERVER] = true
                     }
-                    startServer(context)
+                    val intent =
+                        Intent(context, WaterServerService::class.java).apply {
+                            action = WaterServerService.ACTION_START
+                        }
+                    context.startForegroundService(intent)
                 }
             } else {
                 Toast
@@ -95,11 +99,11 @@ fun WaterServiceSettings(modifier: Modifier = Modifier) {
     var serverIpError by remember { mutableStateOf(false) }
 
     fun startServer() {
-        val serviceIntent =
+        val intent =
             Intent(context, WaterServerService::class.java).apply {
                 action = WaterServerService.ACTION_START
             }
-        context.startForegroundService(serviceIntent)
+        context.startForegroundService(intent)
 
         scope.launch {
             val authToken =
@@ -114,8 +118,11 @@ fun WaterServiceSettings(modifier: Modifier = Modifier) {
     }
 
     fun stopServer() {
-        val serviceIntent = Intent(context, WaterServerService::class.java)
-        context.stopService(serviceIntent)
+        val intent =
+            Intent(context, WaterServerService::class.java).apply {
+                action = WaterServerService.ACTION_STOP
+            }
+        context.startService(intent)
     }
 
     LaunchedEffect(useLocalServer) {

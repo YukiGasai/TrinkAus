@@ -14,6 +14,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.yukigasai.trinkaus.R
+import com.yukigasai.trinkaus.service.WaterServerService.Companion.triggerNotificationUpdate
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
 import com.yukigasai.trinkaus.shared.HydrationOption
@@ -156,6 +157,8 @@ class TrinkAusStateHolder(
             getHydrationData()
 
             val currentLevel = hydrationLevel.firstOrNull() ?: 0.0
+
+            triggerNotificationUpdate(context)
 
             WearableMessenger.sendMessage(
                 context,

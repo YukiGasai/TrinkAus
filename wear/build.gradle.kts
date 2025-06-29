@@ -6,14 +6,14 @@ plugins {
 
 android {
     namespace = "com.yukigasai.trinkaus"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1016
-        versionName = "1.16"
+        versionCode = 1017
+        versionName = "1.17"
     }
 
     buildTypes {

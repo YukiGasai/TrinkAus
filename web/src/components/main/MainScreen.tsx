@@ -24,15 +24,19 @@ export function MainScreen() {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    async function updateOnlyHydration(date: Date) {
-        setIsLoading(true);
+    async function updateOnlyHydration(date: Date, showLoading = true) {
+        if (showLoading) {
+            setIsLoading(true);
+        }
         const hydration = await getHydration(dateToString(date));
         if (hydration._tag === "Failure") {
             toast.error(hydration.error);
             return;
         }
         currentHydration.value = hydration.data;
-        setIsLoading(false);
+        if (showLoading) {
+            setIsLoading(false);
+        }
     }
 
     async function updateOnlyHistory(date: Date) {
@@ -101,6 +105,13 @@ export function MainScreen() {
     useSignalEffect(() => {
         updateOnlyHistory(historyDate.value);
     })
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            updateOnlyHydration(currentDate.value, false);
+        }, 60 * 5  * 1000);
+        return () => clearInterval(interval);
+    }, [currentDate]);
 
 
     const progress = computed(() => {
