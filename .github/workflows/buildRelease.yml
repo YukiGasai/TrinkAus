@@ -91,6 +91,7 @@ jobs:
       - name: Upload Mobile AAB to Google Play
         id: upload_mobile_play
         uses: r0adkll/upload-google-play@v1.1.1
+        continue-on-error: true
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.yukigasai.trinkaus
@@ -100,6 +101,7 @@ jobs:
       - name: Upload Wear OS AAB to Google Play
         id: upload_wear_play
         uses: r0adkll/upload-google-play@v1.1.1
+        continue-on-error: true
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.yukigasai.trinkaus
@@ -131,17 +133,6 @@ jobs:
           asset_path: ${{ steps.sign_mobile_apk.outputs.signedReleaseFile }}
           asset_name: trinkaus-mobile.apk
           asset_content_type: application/vnd.android.package-archive
-
-
-      - name: Upload Rainmeter Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-        with:
-          upload_url: ${{ steps.create_gh_release.outputs.upload_url }}
-          asset_path: TrinkAusSkin.rmskin
-          asset_name: TrinkAusSkin.rmskin
-          asset_content_type: application/gzip
 
       - name: Upload Wear OS APK to GitHub Release
         uses: actions/upload-release-asset@v1
