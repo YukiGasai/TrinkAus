@@ -66,4 +66,14 @@
     <string name="unknown_error">Unbekannter Fehler</string>
     <string name="failed_get_ip">Lokale IP konnte nicht gefunden werden</string>
     <string name="add_water">Wasser hinzufügen</string>
+    <string name="custom_amount_message">Gebe eine eigene Menge an die hinzugefügt werden soll.</string>
+    <string name="server_url_copied">Server URL kopiert!</string>
+    <string name="base_server_ip_error">Server nicht gestartet oder IP nicht verfügbar.</string>
+    <string name="health_conntect_not_available">Health connect ist für dieses Gerät nicht verfügbar.</string>
+    <string name="today">Heute</string>
+    <string name="yesterday">Gestern</string>
+    <string name="server_running_no_ip_message">Server läuft aber IP wurde nicht gefunden.</string>
+    <string name="server_running_message">"Server läuft unter: "</string>
+    <string name="server_offline_no_network">Server ist aus. Wartet auf Netzwerkverbindung.</string>
+    <string name="initializing">Startet...</string>
 </resources>

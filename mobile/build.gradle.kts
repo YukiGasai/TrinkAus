@@ -12,8 +12,8 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 28
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.17"
+        versionCode = 18
+        versionName = "1.18"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {

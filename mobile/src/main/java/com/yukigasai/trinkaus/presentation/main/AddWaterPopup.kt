@@ -40,7 +40,7 @@ fun AddWaterPopup(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Select the custom amount to add",
+                text = stringResource(R.string.custom_amount_message),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.primary,

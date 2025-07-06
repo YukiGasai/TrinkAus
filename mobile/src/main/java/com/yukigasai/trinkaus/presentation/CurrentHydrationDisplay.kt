@@ -1,6 +1,7 @@
 package com.yukigasai.trinkaus.presentation
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -28,11 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.shared.UnitHelper
 import com.yukigasai.trinkaus.util.TrinkAusStateHolder
 import java.time.LocalDate
@@ -65,6 +68,8 @@ fun CurrentHydrationDisplay(
     // Define a threshold for the swipe gesture (e.g., 1/4 of the screen width)
     val swipeThreshold = with(LocalDensity.current) { (configuration.screenWidthDp.dp / 4).toPx() }
 
+    val context = LocalContext.current
+
     val animatedProgress =
         animateFloatAsState(
             targetValue = initialProgress.floatValue,
@@ -77,12 +82,13 @@ fun CurrentHydrationDisplay(
         )
 
     fun formatDate(
+        context: Context,
         date: LocalDate,
         today: LocalDate,
     ): String =
         when (date) {
-            today -> "Heute"
-            today.minusDays(1) -> "Gestern"
+            today -> context.getString(R.string.today)
+            today.minusDays(1) -> context.getString(R.string.yesterday)
             else ->
                 if (date.isAfter(today.minusDays(7)) && date.isBefore(today)) {
                     date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
@@ -154,6 +160,7 @@ fun CurrentHydrationDisplay(
                 Text(
                     text =
                         formatDate(
+                            context = context,
                             date = selectedDate.value,
                             today = today,
                         ),

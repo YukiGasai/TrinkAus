@@ -63,3 +63,14 @@
 -dontwarn org.eclipse.jetty.npn.NextProtoNego$ServerProvider
 -dontwarn org.eclipse.jetty.npn.NextProtoNego
 -dontwarn reactor.blockhound.integration.BlockHoundIntegration
+-dontwarn com.sun.nio.file.SensitivityWatchEventModifier
+
+# Keep Ktor classes for the Local Connect feature.
+-keep class io.ktor.** { *; }
+-keepclassmembers class io.ktor.** { *; }
+
+# Keep Netty classes for the Local Connect feature.
+-keep class io.netty.** { *; }
+-keepclassmembers class io.netty.** { *; }
+# Ignore warnings related to io.netty package (e.g., unused classes or reflection issues)
+-dontwarn io.netty.**

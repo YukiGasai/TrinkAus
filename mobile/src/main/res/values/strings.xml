@@ -65,4 +65,14 @@
     <string name="unknown_error">Unknown Error</string>
     <string name="failed_get_ip">Failed to get local IP Address</string>
     <string name="add_water">Add water</string>
+    <string name="custom_amount_message">Select the custom amount to add</string>
+    <string name="server_url_copied">Server URL copied!</string>
+    <string name="base_server_ip_error">Server not running or IP not available.</string>
+    <string name="health_conntect_not_available">Health Connect is not available on this device.</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="server_running_no_ip_message">Server running, but IP not found.</string>
+    <string name="server_running_message">Server running at:</string>
+    <string name="server_offline_no_network">Server is offline. Waiting for network..</string>
+    <string name="initializing">Initializing...</string>
 </resources>

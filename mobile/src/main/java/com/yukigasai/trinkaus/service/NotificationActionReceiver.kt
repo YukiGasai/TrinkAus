@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
 import androidx.datastore.preferences.core.edit
 import androidx.glance.appwidget.updateAll
-import com.yukigasai.trinkaus.service.CompanionMessageService
+import com.yukigasai.trinkaus.R
 import com.yukigasai.trinkaus.service.WaterServerService.Companion.triggerNotificationUpdate
 import com.yukigasai.trinkaus.shared.Constants
 import com.yukigasai.trinkaus.shared.Constants.DataStore.DataStoreKeys
@@ -55,9 +55,19 @@ class NotificationActionReceiver : BroadcastReceiver() {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             val clip = ClipData.newPlainText("Server URL", serverUrl)
                             clipboard.setPrimaryClip(clip)
-                            Toast.makeText(context, "Server URL copied!", Toast.LENGTH_SHORT).show()
+                            Toast
+                                .makeText(
+                                    context,
+                                    context.getString(R.string.server_url_copied),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
                         } else {
-                            Toast.makeText(context, "Server not running or IP not available.", Toast.LENGTH_SHORT).show()
+                            Toast
+                                .makeText(
+                                    context,
+                                    context.getString(R.string.base_server_ip_error),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
                         }
                     } finally {
                         pendingResult.finish()

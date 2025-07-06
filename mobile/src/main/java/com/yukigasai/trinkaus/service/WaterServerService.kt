@@ -112,8 +112,8 @@ class WaterServerService : Service() {
         val notification =
             createNotification(
                 context = this,
-                title = "PC Sync Service",
-                text = "Initializing...",
+                title = "Hydration API Service",
+                text = this@WaterServerService.getString(R.string.initializing),
             )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -144,12 +144,12 @@ class WaterServerService : Service() {
                 val ipResult = ServerManager.getLocalIpAddress()
                 content =
                     if (ipResult.isSuccess) {
-                        "Server online at: ${ipResult.getOrNull()}"
+                        this@WaterServerService.getString(R.string.server_running_message) + ipResult.getOrNull()
                     } else {
-                        "Server running, but IP not found."
+                        this@WaterServerService.getString(R.string.server_running_no_ip_message)
                     }
             } else {
-                content = "Server is offline. Waiting for network..."
+                content = this@WaterServerService.getString(R.string.server_offline_no_network)
             }
 
             // --- Build and Post Notification ---
@@ -192,7 +192,7 @@ class WaterServerService : Service() {
             val channel =
                 NotificationChannel(
                     CHANNEL_ID,
-                    "PC Sync Service",
+                    "Hydration API Service",
                     NotificationManager.IMPORTANCE_LOW,
                 )
             val manager = context.getSystemService(NotificationManager::class.java)
