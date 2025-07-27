@@ -10,6 +10,7 @@ import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getAmount
 import com.yukigasai.trinkaus.util.HydrationHelper
+import com.yukigasai.trinkaus.util.ServerManager
 import com.yukigasai.trinkaus.widget.TrinkAusWidget
 
 val HydrationOptionKey = ActionParameters.Key<HydrationOption>("hydrationOptionKey")
@@ -31,7 +32,7 @@ class AddWaterActionCallback : ActionCallback {
             Constants.Path.UPDATE_HYDRATION,
             hydration,
         )
-
+        ServerManager.broadcastHydrationUpdate(context)
         TrinkAusWidget().updateAll(context)
     }
 }

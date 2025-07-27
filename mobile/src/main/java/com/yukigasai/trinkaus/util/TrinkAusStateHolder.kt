@@ -159,7 +159,7 @@ class TrinkAusStateHolder(
             val currentLevel = hydrationLevel.firstOrNull() ?: 0.0
 
             triggerNotificationUpdate(context)
-
+            ServerManager.broadcastHydrationUpdate(context)
             WearableMessenger.sendMessage(
                 context,
                 Constants.Path.UPDATE_HYDRATION,

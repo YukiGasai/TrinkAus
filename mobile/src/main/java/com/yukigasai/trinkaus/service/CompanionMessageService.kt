@@ -13,6 +13,7 @@ import com.yukigasai.trinkaus.shared.HydrationOption
 import com.yukigasai.trinkaus.shared.WearableMessenger
 import com.yukigasai.trinkaus.shared.getAmount
 import com.yukigasai.trinkaus.util.HydrationHelper
+import com.yukigasai.trinkaus.util.ServerManager
 import com.yukigasai.trinkaus.widget.TrinkAusWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,7 +77,7 @@ class CompanionMessageService : WearableListenerService() {
                         Constants.Path.UPDATE_HYDRATION,
                         newHydration.toString(),
                     )
-
+                    ServerManager.broadcastHydrationUpdate(this@CompanionMessageService)
                     triggerNotificationUpdate(this@CompanionMessageService)
 
                     TrinkAusWidget().updateAll(this@CompanionMessageService)

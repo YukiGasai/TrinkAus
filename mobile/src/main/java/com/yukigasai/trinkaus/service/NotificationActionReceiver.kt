@@ -100,7 +100,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
             // Update all the widgets manually as the flow might be dead
             TrinkAusWidget().updateAll(context)
-
+            ServerManager.broadcastHydrationUpdate(context)
             triggerNotificationUpdate(context)
 
             // Hide the message

@@ -12,8 +12,8 @@ android {
         applicationId = "com.yukigasai.trinkaus"
         minSdk = 28
         targetSdk = 36
-        versionCode = 18
-        versionName = "1.18"
+        versionCode = 19
+        versionName = "1.19"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.ktor.server.core.jvm)
     implementation(libs.ktor.server.netty.jvm)
     implementation(libs.ktor.server.cors.jvm)
+    implementation(libs.ktor.server.websockets)
 
     implementation(libs.compose.wheel.picker)
 }
