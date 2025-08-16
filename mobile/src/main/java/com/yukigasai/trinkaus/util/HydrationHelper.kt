@@ -19,10 +19,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.TreeMap
+
+data class HydrationEntry(
+    val uid: String,
+    val amount: Double,
+    val time: LocalDateTime,
+)
 
 data class HydrationHistoryEntry(
     val date: LocalDate,
@@ -130,7 +137,7 @@ object HydrationHelper {
 
         try {
             val zoneOffset = ZoneOffset.systemDefault().rules.getOffset(date.atStartOfDay())
-            val startTime = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
+            val startTime = date.atTime(java.time.LocalTime.now()).atZone(ZoneId.systemDefault()).toInstant()
             val endTime = startTime.plusSeconds(60)
 
             val hydrationRecord =
@@ -345,5 +352,55 @@ object HydrationHelper {
             startDate = if (currentStreakLength != 0) checkDate else null,
             isLoading = false,
         )
+    }
+
+    suspend fun readHydrationEntriesForDate(
+        context: Context,
+        date: LocalDate,
+    ): List<HydrationEntry> {
+        try {
+            val systemZoneId = ZoneId.systemDefault()
+            val healthConnectClient = HealthConnectClient.getOrCreate(context)
+            val zoneId = ZoneId.systemDefault()
+            val startOfDay = date.atStartOfDay(zoneId).toInstant()
+            val endOfDay = date.plusDays(1).atStartOfDay(zoneId).toInstant()
+
+            val timeRangeFilter = TimeRangeFilter.between(startOfDay, endOfDay)
+            val request = ReadRecordsRequest(HydrationRecord::class, timeRangeFilter)
+            val records = healthConnectClient.readRecords(request).records
+
+            return records
+                .map { record ->
+                    HydrationEntry(
+                        uid = record.metadata.id,
+                        amount =
+                            if (UnitHelper.isMetric()) {
+                                record.volume.inMilliliters
+                            } else {
+                                record.volume.inFluidOuncesUs
+                            },
+                        time = record.startTime.atZone(systemZoneId).toLocalDateTime(),
+                    )
+                }.reversed()
+        } catch (e: Exception) {
+            println("Error reading hydration entries for date: ${e.message}")
+            return emptyList()
+        }
+    }
+
+    suspend fun deleteHydrationEntry(
+        context: Context,
+        uid: String,
+    ) {
+        try {
+            val healthConnectClient = HealthConnectClient.getOrCreate(context)
+            healthConnectClient.deleteRecords(
+                HydrationRecord::class,
+                recordIdsList = listOf(uid),
+                clientRecordIdsList = emptyList(),
+            )
+        } catch (e: Exception) {
+            println("Error deleting hydration entry: ${e.message}")
+        }
     }
 }

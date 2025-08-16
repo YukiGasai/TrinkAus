@@ -76,4 +76,7 @@
     <string name="server_running_message">"Server läuft unter: "</string>
     <string name="server_offline_no_network">Server ist aus. Wartet auf Netzwerkverbindung.</string>
     <string name="initializing">Startet...</string>
+    <string name="no_data">Keine Daten</string>
+    <string name="delete_entry">Eintrag löschen</string>
+    <string name="entries_for">Einträge vom</string>
 </resources>
